@@ -1,0 +1,123 @@
+// src/app/profile/page.jsx
+"use client";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Avatar,
+  Box,
+  Button,
+  Container,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  Typography,
+} from "@mui/material";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import { useAuth } from "../../context/AuthContext";
+
+const InfoRow = ({ label, value }) => (
+  <TableRow className="[&:nth-of-type(odd)]:bg-gray-100">
+    <TableCell className="font-semibold text-gray-600">{label}</TableCell>
+    <TableCell align="right">{value}</TableCell>
+  </TableRow>
+);
+
+export default function ProfilePage() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    const fetchProfile = async () => {
+      const res = await fetch("/api/user/profile"); // Using Next.js proxy
+      const data = await res.json();
+      setProfile(data.data);
+      setLoading(false);
+    };
+    fetchProfile();
+  }, [user, router]);
+
+  if (loading || !profile) return <LoadingSpinner />;
+
+  return (
+    <Container maxWidth="sm" className="py-8">
+      <Box className="flex flex-col items-center mb-6">
+        <Avatar
+          sx={{
+            width: 80,
+            height: 80,
+            bgcolor: "primary.main",
+            fontSize: "2.5rem",
+          }}
+        >
+          {profile.displayName.charAt(0).toUpperCase()}
+        </Avatar>
+      </Box>
+      <Paper elevation={2} className="overflow-hidden">
+        <Typography
+          variant="h6"
+          className="bg-green-600 text-white p-3 font-bold"
+        >
+          আপনার তথ্যসমূহ
+        </Typography>
+        <TableContainer>
+          <Table size="small">
+            <TableBody>
+              <InfoRow label="আপনার আইডি" value={profile.username} />
+              <InfoRow label="আপনার নাম" value={profile.displayName} />
+              <InfoRow label="অ্যাকাউন্ট ভেরিফিকেশন" value="নেই" />
+              <InfoRow
+                label="অংশগ্রহণকৃত লাইভ পরীক্ষার সংখ্যা"
+                value={profile.examsTaken}
+              />
+              <InfoRow
+                label="পাসকৃত লাইভ পরীক্ষার সংখ্যা"
+                value={profile.examsPassed}
+              />
+              <InfoRow
+                label="মোট প্রশ্ন সংখ্যা (লাইভ পরীক্ষা)"
+                value={profile.totalQuestions.toFixed(1)}
+              />
+              <InfoRow
+                label="মোট সঠিক উত্তর (লাইভ পরীক্ষা)"
+                value={profile.totalCorrect.toFixed(1)}
+              />
+              <InfoRow
+                label="মোট ভুল উত্তর (লাইভ পরীক্ষা)"
+                value={profile.totalWrong.toFixed(1)}
+              />
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+      <Box className="mt-6 grid grid-cols-2 gap-4">
+        <Button
+          variant="contained"
+          onClick={() => router.push("/profile/edit")}
+          sx={{
+            backgroundColor: "#f0ad4e",
+            "&:hover": { backgroundColor: "#ec971f" },
+          }}
+        >
+          Profile Update
+        </Button>
+        <Button
+          variant="contained"
+          sx={{
+            backgroundColor: "#5cb85c",
+            "&:hover": { backgroundColor: "#4cae4c" },
+          }}
+        >
+          পেমেন্ট করুন
+        </Button>
+      </Box>
+    </Container>
+  );
+}

@@ -1,0 +1,178 @@
+[
+  {
+    "_id": {
+      "$oid": "69066f8deaee385e3d8790d0"
+    },
+    "exam_name": "Bangla MCQ Exam",
+    "subjectWiseSort": [
+      {
+        "subject": "Bangla",
+        "questions": [
+          {
+            "ques_no": 1,
+            "ques": "দীনবন্ধু মিত্রের 'নীলদর্পণ' নাটকের ইংরেজি অনুবাদক-",
+            "option_1": "জশুয়া মার্শম্যান",
+            "option_2": "ডেভিড হেয়ার",
+            "option_3": "ঈশ্বরচন্দ্র বিদ্যাসাগর",
+            "option_4": "মাইকেল মধুসুদন দত্ত",
+            "correctAnswer": "মাইকেল মধুসুদন দত্ত",
+            "explanation": "দীনবন্ধু মিত্রের নীলদর্পণ নাটকের ইংরেজি অনুবাদ মাইকেল মধুসুদন দত্ত করেছেন।",
+            "add_favourite": false
+          },
+          {
+            "ques_no": 2,
+            "ques": "রঞ্জন চরিত্রটি রবীন্দ্রনাথ ঠাকুরের কোন নাটকের?",
+            "option_1": "বিসর্জন",
+            "option_2": "রক্তকরবী",
+            "option_3": "মুক্তধারা",
+            "option_4": "ডাকঘর",
+            "correctAnswer": "রক্তকরবী",
+            "explanation": "রঞ্জন চরিত্রটি রবীন্দ্রনাথ ঠাকুরের রক্তকরবী নাটকের একটি প্রধান চরিত্র।",
+            "add_favourite": false
+          },
+          {
+            "ques_no": 3,
+            "ques": "'তৈল' প্রবন্ধটি লিখেছেন-",
+            "option_1": "সুকুমার রায়",
+            "option_2": "রমেশচন্দ্র মজুমদা",
+            "option_3": "শিবনারায়ণ রায়",
+            "option_4": "হরপ্রসাদ শাস্ত্রী",
+            "correctAnswer": "হরপ্রসাদ শাস্ত্রী",
+            "explanation": "তৈল প্রবন্ধটি হরপ্রসাদ শাস্ত্রী লিখেছেন।",
+            "add_favourite": false
+          },
+          {
+            "ques_no": 4,
+            "ques": "\"নাম রেখেছি কোমল গান্ধার\" কাব্যের রচয়িতা",
+            "option_1": "রবীন্দ্রনাথ ঠাকুর",
+            "option_2": "বিষ্ণু দে",
+            "option_3": "অমিয় চক্রবর্তী",
+            "option_4": "প্রেমেন্দ্র মিত্র",
+            "correctAnswer": "বিষ্ণু দে",
+            "explanation": "\"নাম রেখেছি কোমল গান্ধার\" কাব্যের রচয়িতা বিষ্ণু দে।",
+            "add_favourite": false
+          },
+          {
+            "ques_no": 5,
+            "ques": "'ও মোর রমজানের ঐ রোজার শেষে এলো খুশির ঈদ' গানটির রচয়িতা-",
+            "option_1": "কাজী নজরুল ইসলাম",
+            "option_2": "গোলাম মোস্তফা",
+            "option_3": "জসীমউদ্দীন",
+            "option_4": "আব্বাস উদ্দীন আহমদ",
+            "correctAnswer": "কাজী নজরুল ইসলাম",
+            "explanation": "'ও মোর রমজানের ঐ রোজার শেষে এলো খুশির ঈদ' গানটি লিখেছেন কাজী নজরুল ইসলাম।",
+            "add_favourite": false
+          }
+        ]
+      },
+      {
+        "subject": "English",
+        "questions": [
+          {
+            "ques_no": 1,
+            "ques": "What is the synonym of 'benevolent'?",
+            "option_1": "Kind",
+            "option_2": "Cruel",
+            "option_3": "Selfish",
+            "option_4": "Proud",
+            "correctAnswer": "Kind",
+            "explanation": "Benevolent means kind and generous.",
+            "add_favourite": false
+          },
+          {
+            "ques_no": 2,
+            "ques": "Which of the following is a verb?",
+            "option_1": "Quick",
+            "option_2": "Run",
+            "option_3": "Blue",
+            "option_4": "Happy",
+            "correctAnswer": "Run",
+            "explanation": "'Run' is an action, which makes it a verb.",
+            "add_favourite": false
+          }
+        ]
+      },
+      {
+        "subject": "Math",
+        "questions": [
+          {
+            "ques_no": 1,
+            "ques": "৫ + ৭ = ?",
+            "option_1": "১০",
+            "option_2": "১২",
+            "option_3": "১১",
+            "option_4": "১৩",
+            "correctAnswer": "১২",
+            "explanation": "৫ এবং ৭ যোগ করলে ফলাফল ১২ হয়।",
+            "add_favourite": false
+          },
+          {
+            "ques_no": 2,
+            "ques": "৯ x ৩ = ?",
+            "option_1": "২৭",
+            "option_2": "২৪",
+            "option_3": "৩০",
+            "option_4": "৩৬",
+            "correctAnswer": "২৭",
+            "explanation": "৯ এবং ৩ গুণ করলে ২৭ হয়।",
+            "add_favourite": false
+          }
+        ]
+      },
+      {
+        "subject": "General Knowledge",
+        "questions": [
+          {
+            "ques_no": 1,
+            "ques": "বাংলাদেশের জাতীয় ফুল কোনটি?",
+            "option_1": "গোলাপ",
+            "option_2": "শাপলা",
+            "option_3": "সূর্যমুখী",
+            "option_4": "জুঁই",
+            "correctAnswer": "শাপলা",
+            "explanation": "শাপলা বাংলাদেশের জাতীয় ফুল।",
+            "add_favourite": false
+          },
+          {
+            "ques_no": 2,
+            "ques": "বিশ্বের সর্বোচ্চ পর্বতশৃঙ্গ কোনটি?",
+            "option_1": "কাঞ্চনজঙ্ঘা",
+            "option_2": "এভারেস্ট",
+            "option_3": "কিলিমাঞ্জারো",
+            "option_4": "মাকালু",
+            "correctAnswer": "এভারেস্ট",
+            "explanation": "এভারেস্ট বিশ্বের সর্বোচ্চ পর্বতশৃঙ্গ।",
+            "add_favourite": false
+          }
+        ]
+      },
+      {
+        "subject": "Science",
+        "questions": [
+          {
+            "ques_no": 1,
+            "ques": "মানুষের শরীরে কয়টি হাড় রয়েছে?",
+            "option_1": "২০৬",
+            "option_2": "৩০০",
+            "option_3": "২১৮",
+            "option_4": "১৯৮",
+            "correctAnswer": "২০৬",
+            "explanation": "একজন পূর্ণবয়স্ক মানুষের শরীরে ২০৬টি হাড় থাকে।",
+            "add_favourite": false
+          },
+          {
+            "ques_no": 2,
+            "ques": "সূর্য কি ধরনের তারা?",
+            "option_1": "লাল দৈত্য",
+            "option_2": "সাদা বামন",
+            "option_3": "নীল দৈত্য",
+            "option_4": "পীত বামন",
+            "correctAnswer": "পীত বামন",
+            "explanation": "সূর্য একটি পীত বামন ধরনের তারা।",
+            "add_favourite": false
+          }
+        ]
+      }
+    ]
+  }
+]

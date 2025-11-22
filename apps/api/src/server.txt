@@ -1,0 +1,31 @@
+// src/server.js
+const express = require('express');
+const dotenv = require('dotenv');
+const connectDB = require('./config/db.js');
+const questionRoutes = require('./routes/question.routes.js');
+const examRoutes = require("./routes/exam.routes.js");
+const cors = require("cors")
+
+// Load env vars
+dotenv.config();
+
+// Connect to database
+connectDB();
+
+const app = express();
+
+app.use(cors())
+
+// Body parser middleware
+app.use(express.json());
+
+// Mount routers
+app.use('/api/questions', questionRoutes);
+app.use("/api/exams", examRoutes);
+
+const PORT = process.env.PORT || 5001;
+
+app.listen(
+  PORT,
+  console.log(`Server running on port ${PORT}`)
+);

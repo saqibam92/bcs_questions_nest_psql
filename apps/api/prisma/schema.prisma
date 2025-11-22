@@ -1,0 +1,131 @@
+// apps/api/prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// -----------------
+// EXAM & CONTENT MODELS
+// -----------------
+
+model Exam {
+id               String        @id @default(cuid())
+  name             String        @default("Untitled Exam") 
+  slug             String        @unique @default("untitled-exam") 
+  description      String?       @db.Text
+  durationMinutes  Int           @default(60) 
+  totalMarks       Float         @default(100) 
+  passingMarks     Float         @default(40)
+  examDate         DateTime?
+  isPublished      Boolean       @default(false)
+  
+  hasNegativeMarking   Boolean   @default(false)
+  negativeMarkingValue Float     @default(0)
+
+  sections         ExamSection[]
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@map("exams")
+}
+
+// Reusable Subject Pool (e.g., "English", "Math")
+model Subject {
+  id        String        @id @default(cuid())
+  name      String        @unique
+  sections  ExamSection[] 
+
+  @@map("subjects")
+}
+
+// Sections within a specific Exam (New Model)
+model ExamSection {
+  id              String     @id @default(cuid())
+  examId          String
+  exam            Exam       @relation(fields: [examId], references: [id], onDelete: Cascade)
+  
+  subjectId       String?
+  subject         Subject?   @relation(fields: [subjectId], references: [id])
+  
+  name            String     // e.g., "Part A: General Knowledge"
+  order           Int        @default(0)
+  defaultMarks    Float      @default(1)
+  
+  questions       Question[]
+
+  @@map("exam_sections")
+}
+
+model Question {
+  id              String      @id @default(cuid())
+  // Made optional for migration compatibility, must be filled later!
+  sectionId       String?
+  section         ExamSection? @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  
+  // Renamed from 'ques', added default
+  text            String      @db.Text @default("") 
+  optionA         String      @default("") // Added default
+  optionB         String      @default("") // Added default
+  optionC         String      @default("") // Added default
+  optionD         String      @default("") // Added default
+  correctOption   String      @default("A") // Renamed from 'correctAnswer', added default
+  
+  explanation     String?     @db.Text
+  imageUrl        String?
+  marks           Float       @default(1) // Added default
+
+  order           Int         @default(0)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("questions")
+}
+
+// -----------------
+// AUTH MODELS (Unchanged)
+// -----------------
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?  @unique
+  password  String
+  userId    String   @unique @default(cuid())
+  userType  UserType @default(FREE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Admin {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      AdminRole @default(MODERATOR)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("admins")
+}
+
+enum UserType {
+  FREE
+  PAID
+  PREMIUM
+}
+
+enum AdminRole {
+  MODERATOR
+  ADMIN
+  SUPER_ADMIN
+}
