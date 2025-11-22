@@ -5,8 +5,8 @@ export declare class ExamController {
     getAllExams(): Promise<{
         id: string;
         name: string;
-        slug: string;
         createdAt: Date;
+        slug: string;
     }[]>;
     getExamById(id: string): Promise<{
         sections: {
@@ -17,6 +17,8 @@ export declare class ExamController {
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         slug: string;
         description: string | null;
         durationMinutes: number;
@@ -26,8 +28,6 @@ export declare class ExamController {
         isPublished: boolean;
         hasNegativeMarking: boolean;
         negativeMarkingValue: number;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     getQuestionsForSection(sectionId: string): Promise<{
         id: string;

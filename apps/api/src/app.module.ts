@@ -6,23 +6,21 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { ExamsModule } from './exams/exams.module';
 import { UploadModule } from './upload/upload.module';
-
-// Import the new modules you created
 import { AdminAuthModule } from './auth/admin-auth.module';
 import { SubjectsModule } from './subjects/subjects.module';
 import { QuestionsModule } from './questions/questions.module';
 import { UserModule } from './user/user.module';
-import { AuthModule } from './auth/auth.module'; // This is the old user auth
+import { AuthModule } from './auth/auth.module';
+import { AdminsModule } from './admins/admins.module';
 
 @Module({
   imports: [
     PrismaModule,
     ExamsModule,
+    AdminsModule,
     UploadModule,
     UserModule,
-    AuthModule, // For existing user/mobile auth
-
-    // Add these lines to register your new modules
+    AuthModule,
     AdminAuthModule,
     SubjectsModule,
     QuestionsModule,

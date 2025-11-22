@@ -18,6 +18,7 @@ const subjects_module_1 = require("./subjects/subjects.module");
 const questions_module_1 = require("./questions/questions.module");
 const user_module_1 = require("./user/user.module");
 const auth_module_1 = require("./auth/auth.module");
+const admins_module_1 = require("./admins/admins.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -26,6 +27,7 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             prisma_module_1.PrismaModule,
             exams_module_1.ExamsModule,
+            admins_module_1.AdminsModule,
             upload_module_1.UploadModule,
             user_module_1.UserModule,
             auth_module_1.AuthModule,

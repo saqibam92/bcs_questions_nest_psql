@@ -13,8 +13,8 @@ export declare class SubjectsController {
             name: string;
             order: number;
             defaultMarks: number;
-            examId: string;
             subjectId: string | null;
+            examId: string;
         }[];
     } & {
         id: string;
@@ -26,8 +26,8 @@ export declare class SubjectsController {
             name: string;
             order: number;
             defaultMarks: number;
-            examId: string;
             subjectId: string | null;
+            examId: string;
         }[];
     } & {
         id: string;

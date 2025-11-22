@@ -5,8 +5,8 @@ export declare class ExamService {
     getAllExams(): Promise<{
         id: string;
         name: string;
-        slug: string;
         createdAt: Date;
+        slug: string;
     }[]>;
     getExamById(id: string): Promise<{
         sections: ({
@@ -30,13 +30,15 @@ export declare class ExamService {
             id: string;
             name: string;
             order: number;
-            examId: string;
-            subjectId: string | null;
             defaultMarks: number;
+            subjectId: string | null;
+            examId: string;
         })[];
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         slug: string;
         description: string | null;
         durationMinutes: number;
@@ -46,8 +48,6 @@ export declare class ExamService {
         isPublished: boolean;
         hasNegativeMarking: boolean;
         negativeMarkingValue: number;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     getExamWithSections(id: string): Promise<{
         sections: {
@@ -58,6 +58,8 @@ export declare class ExamService {
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         slug: string;
         description: string | null;
         durationMinutes: number;
@@ -67,8 +69,6 @@ export declare class ExamService {
         isPublished: boolean;
         hasNegativeMarking: boolean;
         negativeMarkingValue: number;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     getQuestionsForSection(sectionId: string): Promise<{
         id: string;

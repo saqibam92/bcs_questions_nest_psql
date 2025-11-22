@@ -31,6 +31,8 @@ export declare class ExamsController {
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         slug: string;
         description: string | null;
         durationMinutes: number;
@@ -40,15 +42,13 @@ export declare class ExamsController {
         isPublished: boolean;
         hasNegativeMarking: boolean;
         negativeMarkingValue: number;
-        createdAt: Date;
-        updatedAt: Date;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
     findAll(): import(".prisma/client").Prisma.PrismaPromise<{
         id: string;
         name: string;
+        createdAt: Date;
         slug: string;
         isPublished: boolean;
-        createdAt: Date;
         _count: {
             sections: number;
         };
@@ -82,6 +82,8 @@ export declare class ExamsController {
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         slug: string;
         description: string | null;
         durationMinutes: number;
@@ -91,8 +93,6 @@ export declare class ExamsController {
         isPublished: boolean;
         hasNegativeMarking: boolean;
         negativeMarkingValue: number;
-        createdAt: Date;
-        updatedAt: Date;
     }, null, import("@prisma/client/runtime/library").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
     update(id: string, updateExamDto: any): import(".prisma/client").Prisma.Prisma__ExamClient<{
         sections: {
@@ -106,6 +106,8 @@ export declare class ExamsController {
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         slug: string;
         description: string | null;
         durationMinutes: number;
@@ -115,12 +117,12 @@ export declare class ExamsController {
         isPublished: boolean;
         hasNegativeMarking: boolean;
         negativeMarkingValue: number;
-        createdAt: Date;
-        updatedAt: Date;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
     remove(id: string): import(".prisma/client").Prisma.Prisma__ExamClient<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         slug: string;
         description: string | null;
         durationMinutes: number;
@@ -130,7 +132,5 @@ export declare class ExamsController {
         isPublished: boolean;
         hasNegativeMarking: boolean;
         negativeMarkingValue: number;
-        createdAt: Date;
-        updatedAt: Date;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
 }

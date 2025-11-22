@@ -32,6 +32,8 @@ export declare class ExamsService {
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         slug: string;
         description: string | null;
         durationMinutes: number;
@@ -41,15 +43,13 @@ export declare class ExamsService {
         isPublished: boolean;
         hasNegativeMarking: boolean;
         negativeMarkingValue: number;
-        createdAt: Date;
-        updatedAt: Date;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, Prisma.PrismaClientOptions>;
     findAll(): Prisma.PrismaPromise<{
         id: string;
         name: string;
+        createdAt: Date;
         slug: string;
         isPublished: boolean;
-        createdAt: Date;
         _count: {
             sections: number;
         };
@@ -83,6 +83,8 @@ export declare class ExamsService {
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         slug: string;
         description: string | null;
         durationMinutes: number;
@@ -92,8 +94,6 @@ export declare class ExamsService {
         isPublished: boolean;
         hasNegativeMarking: boolean;
         negativeMarkingValue: number;
-        createdAt: Date;
-        updatedAt: Date;
     }, null, import("@prisma/client/runtime/library").DefaultArgs, Prisma.PrismaClientOptions>;
     update(id: string, data: Prisma.ExamUpdateInput): Prisma.Prisma__ExamClient<{
         sections: {
@@ -107,6 +107,8 @@ export declare class ExamsService {
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         slug: string;
         description: string | null;
         durationMinutes: number;
@@ -116,12 +118,12 @@ export declare class ExamsService {
         isPublished: boolean;
         hasNegativeMarking: boolean;
         negativeMarkingValue: number;
-        createdAt: Date;
-        updatedAt: Date;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, Prisma.PrismaClientOptions>;
     remove(id: string): Prisma.Prisma__ExamClient<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         slug: string;
         description: string | null;
         durationMinutes: number;
@@ -131,7 +133,5 @@ export declare class ExamsService {
         isPublished: boolean;
         hasNegativeMarking: boolean;
         negativeMarkingValue: number;
-        createdAt: Date;
-        updatedAt: Date;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, Prisma.PrismaClientOptions>;
 }

@@ -125,7 +125,9 @@ enum UserType {
 }
 
 enum AdminRole {
-  MODERATOR
+SUPER_ADMIN
   ADMIN
-  SUPER_ADMIN
+  MODERATOR
+  EDITOR
+  VIEWER
 }

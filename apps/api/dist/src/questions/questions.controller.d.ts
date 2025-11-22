@@ -6,14 +6,18 @@ export declare class QuestionsController {
     create(data: Prisma.QuestionCreateInput): Prisma.Prisma__QuestionClient<{
         section: {
             id: string;
-            order: number;
             name: string;
-            examId: string;
-            subjectId: string | null;
+            order: number;
             defaultMarks: number;
+            subjectId: string | null;
+            examId: string;
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        order: number;
+        sectionId: string | null;
         text: string;
         optionA: string;
         optionB: string;
@@ -23,18 +27,14 @@ export declare class QuestionsController {
         explanation: string | null;
         imageUrl: string | null;
         marks: number;
-        order: number;
-        createdAt: Date;
-        updatedAt: Date;
-        sectionId: string | null;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, Prisma.PrismaClientOptions>;
     findAll(): Prisma.PrismaPromise<({
         section: {
             exam: {
                 id: string;
+                name: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 slug: string;
                 description: string | null;
                 durationMinutes: number;
@@ -47,14 +47,18 @@ export declare class QuestionsController {
             };
         } & {
             id: string;
-            order: number;
             name: string;
-            examId: string;
-            subjectId: string | null;
+            order: number;
             defaultMarks: number;
+            subjectId: string | null;
+            examId: string;
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        order: number;
+        sectionId: string | null;
         text: string;
         optionA: string;
         optionB: string;
@@ -64,18 +68,14 @@ export declare class QuestionsController {
         explanation: string | null;
         imageUrl: string | null;
         marks: number;
-        order: number;
-        createdAt: Date;
-        updatedAt: Date;
-        sectionId: string | null;
     })[]>;
     findOne(id: string): Prisma.Prisma__QuestionClient<{
         section: {
             exam: {
                 id: string;
+                name: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 slug: string;
                 description: string | null;
                 durationMinutes: number;
@@ -88,14 +88,18 @@ export declare class QuestionsController {
             };
         } & {
             id: string;
-            order: number;
             name: string;
-            examId: string;
-            subjectId: string | null;
+            order: number;
             defaultMarks: number;
+            subjectId: string | null;
+            examId: string;
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        order: number;
+        sectionId: string | null;
         text: string;
         optionA: string;
         optionB: string;
@@ -105,13 +109,13 @@ export declare class QuestionsController {
         explanation: string | null;
         imageUrl: string | null;
         marks: number;
-        order: number;
-        createdAt: Date;
-        updatedAt: Date;
-        sectionId: string | null;
     }, null, import("@prisma/client/runtime/library").DefaultArgs, Prisma.PrismaClientOptions>;
     findBySection(sectionId: string): Prisma.PrismaPromise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        order: number;
+        sectionId: string | null;
         text: string;
         optionA: string;
         optionB: string;
@@ -121,22 +125,22 @@ export declare class QuestionsController {
         explanation: string | null;
         imageUrl: string | null;
         marks: number;
-        order: number;
-        createdAt: Date;
-        updatedAt: Date;
-        sectionId: string | null;
     }[]>;
     update(id: string, data: Prisma.QuestionUpdateInput): Prisma.Prisma__QuestionClient<{
         section: {
             id: string;
-            order: number;
             name: string;
-            examId: string;
-            subjectId: string | null;
+            order: number;
             defaultMarks: number;
+            subjectId: string | null;
+            examId: string;
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        order: number;
+        sectionId: string | null;
         text: string;
         optionA: string;
         optionB: string;
@@ -146,13 +150,13 @@ export declare class QuestionsController {
         explanation: string | null;
         imageUrl: string | null;
         marks: number;
-        order: number;
-        createdAt: Date;
-        updatedAt: Date;
-        sectionId: string | null;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, Prisma.PrismaClientOptions>;
     remove(id: string): Prisma.Prisma__QuestionClient<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        order: number;
+        sectionId: string | null;
         text: string;
         optionA: string;
         optionB: string;
@@ -162,9 +166,5 @@ export declare class QuestionsController {
         explanation: string | null;
         imageUrl: string | null;
         marks: number;
-        order: number;
-        createdAt: Date;
-        updatedAt: Date;
-        sectionId: string | null;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, Prisma.PrismaClientOptions>;
 }

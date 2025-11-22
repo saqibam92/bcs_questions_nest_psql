@@ -1,270 +1,210 @@
 // src/app/exam/[examId]/page.tsx
 "use client";
-
-import * as React from "react";
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import api from "@/lib/api";
 import {
   Container,
   Typography,
+  Box,
   Button,
+  Paper,
+  Radio,
   RadioGroup,
   FormControlLabel,
-  Radio,
-  Box,
-  Tabs,
-  Tab,
+  Divider,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
-import LoadingSpinner from "../../../components/LoadingSpinner";
-import { getExamById, getQuestionsForSubject } from "../../../services/api";
-import { useRouter } from "next/navigation";
-import type { Exam, Question, Subject, ExamResult, SubjectResult } from "@/types";
-import { useResult } from "@/contexts/ResultContext"; // Import the context hook
+import { useResult } from "@/contexts/ResultContext"; // Assuming you have this context
+import toast from "react-hot-toast";
 
-type ProcessedQuestion = Question & {
-  options: string[];
-  correctAnswerIndex: number;
-};
-
-interface ExamPageProps {
-  params: Promise<{
-    examId: string;
-  }>;
-}
-
-export default function ExamPage({ params }: ExamPageProps) {
-  const resolvedParams = React.use(params);
-  const { examId } = resolvedParams;
+export default function TakeExamPage() {
+  const { examId } = useParams();
   const router = useRouter();
-  const { setResultData } = useResult(); // Get the context setter
+  const { setExamResult } = useResult(); // Context to store results for the result page
 
-  const [exam, setExam] = useState<Exam | null>(null);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [currentQuestions, setCurrentQuestions] = useState<ProcessedQuestion[]>([]);
-  const [allQuestionsMap, setAllQuestionsMap] = useState<Map<string, ProcessedQuestion[]>>(new Map());
-  
-  const [loading, setLoading] = useState(true);
-  const [qLoading, setQLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>("");
-  const [userAnswers, setUserAnswers] = useState<Record<string, number>>({});
-  
-  // NOTE: We remove showResults, score, etc. They are no longer needed here.
-  const [timeLeft, setTimeLeft] = useState(0); 
-  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent double-submit
+  const [exam, setExam] = useState<any>(null);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    getExamById(examId)
-      .then((response) => {
-        const examData = response.data;
-        setExam(examData);
-        setSubjects(examData.subjects || []);
-        if (examData.subjects && examData.subjects.length > 0) {
-          setSelectedSubjectId(examData.subjects[0].id);
-        }
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    if (examId) {
+      api
+        .get(`/exam/${examId}`)
+        .then(({ data }) => {
+          setExam(data);
+          // Assuming duration is in minutes
+          setTimeLeft((data.durationMinutes || 60) * 60);
+        })
+        .catch((err) => toast.error("Failed to load exam"));
+    }
   }, [examId]);
 
+  // Timer Logic
   useEffect(() => {
-    if (!selectedSubjectId) return;
-    if (allQuestionsMap.has(selectedSubjectId)) {
-      setCurrentQuestions(allQuestionsMap.get(selectedSubjectId)!);
-      return;
-    }
-
-    setQLoading(true);
-    getQuestionsForSubject(selectedSubjectId)
-      .then((response) => {
-        const questions = response.data.map(processQuestion);
-        setCurrentQuestions(questions);
-        setAllQuestionsMap(prevMap => new Map(prevMap).set(selectedSubjectId, questions));
-        
-        // Set timer based on *total* questions fetched so far
-        const totalFetched = Array.from(allQuestionsMap.values()).reduce((acc, qs) => acc + qs.length, 0);
-        setTimeLeft(totalFetched * 60); // 1 min per question
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setQLoading(false));
-      
-  }, [selectedSubjectId, allQuestionsMap]);
-
-  const processQuestion = (q: Question): ProcessedQuestion => {
-      const options = [q.option_1, q.option_2, q.option_3, q.option_4];
-      return {
-        ...q,
-        options,
-        correctAnswerIndex: options.indexOf(q.correctAnswer),
-      }
-  }
-
-    const handleSubmit = React.useCallback(() => {
-    if (isSubmitting || !exam) return; 
-    setIsSubmitting(true);
-    
-    let totalScore = 0;
-    let totalCorrect = 0;
-    let totalWrong = 0;
-
-    const subjectBreakdown: SubjectResult[] = subjects.map(subject => {
-        let correct = 0;
-        let wrong = 0;
-        const questions = allQuestionsMap.get(subject.id) || [];
-
-        questions.forEach(q => {
-            const userAnswer = userAnswers[q.id];
-            if (userAnswer !== undefined) {
-                if (userAnswer === q.correctAnswerIndex) {
-                    correct++;
-                } else {
-                    wrong++;
-                }
-            }
-        });
-
-        // Example scoring: 1 mark for correct, 0 for wrong (as per image)
-        const marks = correct;
-        totalCorrect += correct;
-        totalWrong += wrong;
-        totalScore += marks;
-
-        return {
-            subjectName: subject.name,
-            correct,
-            wrong,
-            marks
-        };
-    });
-
-    // Add empty subjects from the image for completeness
-    const allSubjectNames = [
-      "বাংলা সাহিত্য ও ব্যাকরণ", "English Literature and Grammar", "গাণিতিক যুক্তি", 
-      "সাধারণ বিজ্ঞান", "কম্পিউটার ও তথ্য প্রযুক্তি", "মানসিক দক্ষতা", "বাংলাদেশ বিষয়াবলি",
-      "আন্তর্জাতিক বিষয়াবলি", "ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা", "নৈতিকতা, মূল্যবোধ ও সুশাসন"
-    ];
-
-    const finalBreakdown = allSubjectNames.map(name => {
-      const found = subjectBreakdown.find(s => s.subjectName === name);
-      if (found) return found;
-      // Find the "Bangla" subject and map it
-      if (name === "বাংলা সাহিত্য ও ব্যাকরণ" && subjectBreakdown.find(s => s.subjectName === "Bangla")) {
-         return { ...subjectBreakdown.find(s => s.subjectName === "Bangla")!, subjectName: name};
-      }
-      return { subjectName: name, correct: 0, wrong: 0, marks: 0 };
-    });
-
-    const resultData: ExamResult = {
-        totalScore,
-        totalCorrect,
-        totalWrong,
-        subjectBreakdown: finalBreakdown,
-        rank: 9134 // Hardcoded from image
-    };
-
-    // Set data in context and redirect
-    setResultData(exam, resultData);
-    router.push(`/result/${exam.id}`);
-
-  }, [isSubmitting, exam, subjects, allQuestionsMap, userAnswers, setResultData, router]);
-
-  // Timer logic
-  useEffect(() => {
-    if (loading || error || timeLeft <= 0 || isSubmitting) return;
-    const timer = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) {
-          clearInterval(timer);
-          handleSubmit();
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
+    if (timeLeft <= 0) return;
+    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearInterval(timer);
-  }, [loading, error, timeLeft, isSubmitting, handleSubmit]); // Added handleSubmit
+  }, [timeLeft]);
 
-  const formatTime = (s: number) => {
-    const hours = Math.floor(s / 3600).toString().padStart(2, "0");
-    const minutes = Math.floor((s % 3600) / 60).toString().padStart(2, "0");
-    const seconds = (s % 60).toString().padStart(2, "0");
-    return `${hours}:${minutes}:${seconds}`;
+  const handleAnswerChange = (questionId: string, value: string) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
-  const handleSelectOption = (qId: string, idx: number) => {
-    // This will disable the group after selection
-    setUserAnswers((prevAnswers) => ({ ...prevAnswers, [qId]: idx }));
+  const handleSubmit = async () => {
+    if (!confirm("Are you sure you want to submit?")) return;
+    setSubmitting(true);
+
+    // Calculate Result Locally (Or send to backend)
+    // Structure: { examId, answers: { qId: option } }
+
+    let score = 0;
+    let correctCount = 0;
+    let wrongCount = 0;
+    const totalQuestions = exam.sections.reduce(
+      (acc: number, sec: any) => acc + sec.questions.length,
+      0
+    );
+
+    // Iterate sections to check answers
+    exam.sections.forEach((section: any) => {
+      section.questions.forEach((q: any) => {
+        const userAnswer = answers[q.id];
+        if (userAnswer) {
+          if (userAnswer === q.correctOption) {
+            score += q.marks || 1;
+            correctCount++;
+          } else {
+            wrongCount++;
+            // Handle negative marking if applicable
+            if (exam.hasNegativeMarking) {
+              score -= exam.negativeMarkingValue || 0.25;
+            }
+          }
+        }
+      });
+    });
+
+    // Store result in context to show on Result Page
+    setExamResult({
+      examName: exam.name,
+      totalQuestions,
+      score,
+      correctCount,
+      wrongCount,
+      answers, // Pass user answers to review
+      examData: exam, // Pass full exam data to review questions
+    });
+
+    router.push(`/result/${examId}`);
   };
 
+  if (!exam)
+    return (
+      <Box display="flex" justifyContent="center" mt={10}>
+        <CircularProgress />
+      </Box>
+    );
 
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
-    setSelectedSubjectId(newValue);
+  // Format Timer
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
-
-  if (loading) return <LoadingSpinner />;
-  if (error) return <Typography color="error">{error}</Typography>;
 
   return (
-    <Container>
-      <Typography variant="h4" className="text-center my-4">
-        Exam: {exam?.exam_name}
-      </Typography>
-      <Box className="flex justify-between items-center mb-4">
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSubmit}
-          disabled={isSubmitting || Object.keys(userAnswers).length === 0}
-        >
-          {isSubmitting ? "Submitting..." : "Submit Exam"}
-        </Button>
-        <Typography variant="h6" className="text-red-500 text-center">
-          Time Left: {formatTime(timeLeft)}
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      {/* Header with Timer */}
+      <Paper
+        sx={{
+          p: 2,
+          mb: 4,
+          position: "sticky",
+          top: 10,
+          zIndex: 100,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          border: "1px solid #ddd",
+        }}
+      >
+        <Typography variant="h6" fontWeight="bold">
+          {exam.name}
         </Typography>
-      </Box>
-
-      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs
-          value={selectedSubjectId}
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="auto"
+        <Box
+          sx={{
+            bgcolor: timeLeft < 300 ? "error.light" : "primary.light",
+            color: "white",
+            px: 2,
+            py: 1,
+            borderRadius: 2,
+            fontWeight: "bold",
+          }}
         >
-          {subjects.map((s) => (
-            <Tab key={s.id} label={s.name} value={s.id} />
-          ))}
-        </Tabs>
-      </Box>
+          Time Left: {formatTime(timeLeft)}
+        </Box>
+      </Paper>
 
-      {qLoading ? <LoadingSpinner /> : (
-        <div className="space-y-6 mt-4">
-          {currentQuestions.map((q) => (
-            <div key={q.id} className="p-4 border-b border-gray-200">
-              <Typography variant="h6" className="mb-2">
-                {q.ques_no} {q.ques}
+      {/* Sections Loop */}
+      {exam.sections.map((section: any, sIndex: number) => (
+        <Box key={section.id} mb={6}>
+          <Box sx={{ mb: 3, borderLeft: "5px solid #1976d2", pl: 2 }}>
+            <Typography variant="h5" fontWeight="bold" color="primary.main">
+              {section.name}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {section.questions.length} Questions | Marks per Question:{" "}
+              {section.defaultMarks}
+            </Typography>
+          </Box>
+
+          {section.questions.map((q: any, qIndex: number) => (
+            <Paper key={q.id} sx={{ p: 3, mb: 2 }}>
+              <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+                {qIndex + 1}. {q.text}
               </Typography>
+
               <RadioGroup
-                value={userAnswers[q.id] ?? -1}
-                onChange={(e) =>
-                  handleSelectOption(q.id, parseInt(e.target.value))
-                }
-                className="flex flex-col items-start mt-2 space-y-2"
+                value={answers[q.id] || ""}
+                onChange={(e) => handleAnswerChange(q.id, e.target.value)}
               >
-                {q.options.map((o, i) => (
+                {["A", "B", "C", "D"].map((opt) => (
                   <FormControlLabel
-                    key={i}
-                    value={i}
+                    key={opt}
+                    value={opt}
                     control={<Radio />}
-                    label={o}
-                    // --- DISABLE ON SELECT ---
-                    disabled={userAnswers[q.id] !== undefined}
+                    label={
+                      <Box display="flex" gap={1}>
+                        <Typography fontWeight="bold" color="text.secondary">
+                          ({opt})
+                        </Typography>
+                        <Typography>{q[`option${opt}`]}</Typography>
+                      </Box>
+                    }
+                    sx={{ mb: 1 }}
                   />
                 ))}
               </RadioGroup>
-            </div>
+            </Paper>
           ))}
-        </div>
-      )}
+        </Box>
+      ))}
+
+      <Box mt={4} display="flex" justifyContent="center">
+        <Button
+          variant="contained"
+          size="large"
+          color="primary"
+          onClick={handleSubmit}
+          disabled={submitting}
+          sx={{ px: 8, py: 1.5, fontSize: "1.2rem" }}
+        >
+          {submitting ? "Submitting..." : "Submit Exam"}
+        </Button>
+      </Box>
     </Container>
   );
 }
