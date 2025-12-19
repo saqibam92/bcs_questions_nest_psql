@@ -21,7 +21,7 @@ export default function ExamListPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/exam").then(({ data }) => {
+    api.get("/exams").then(({ data }) => {
       setExams(data);
       setLoading(false);
     });
@@ -43,7 +43,7 @@ export default function ExamListPage() {
       {loading ? (
         <Grid container spacing={3}>
           {[1, 2, 3].map((i) => (
-            <Grid item xs={12} md={4} key={i}>
+            <Grid size={{ xs: 12, md: 4 }} key={i}>
               <Skeleton height={200} />
             </Grid>
           ))}
@@ -51,7 +51,7 @@ export default function ExamListPage() {
       ) : (
         <Grid container spacing={4}>
           {exams.map((exam) => (
-            <Grid item key={exam.id} xs={12} sm={6} md={4}>
+            <Grid key={exam.id} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card
                 sx={{
                   height: "100%",

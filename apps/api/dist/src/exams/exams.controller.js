@@ -29,8 +29,11 @@ let ExamsController = class ExamsController {
     findAll() {
         return this.examsService.findAll();
     }
-    findOne(id) {
-        return this.examsService.findOne(id);
+    async findOne(id) {
+        const exam = await this.examsService.findOne(id);
+        if (!exam)
+            throw new Error('Exam not found');
+        return exam;
     }
     update(id, updateExamDto) {
         return this.examsService.update(id, updateExamDto);
@@ -60,7 +63,7 @@ __decorate([
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], ExamsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.UseGuards)(admin_auth_guard_1.AdminAuthGuard, roles_guard_1.RolesGuard),

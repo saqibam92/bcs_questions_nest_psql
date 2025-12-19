@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { ExamsModule } from './exams/exams.module';
+import { ExamModule } from './exam/exam.module';
 import { UploadModule } from './upload/upload.module';
 import { AdminAuthModule } from './auth/admin-auth.module';
 import { SubjectsModule } from './subjects/subjects.module';
@@ -16,6 +17,7 @@ import { AdminsModule } from './admins/admins.module';
 @Module({
   imports: [
     PrismaModule,
+    ExamModule,
     ExamsModule,
     AdminsModule,
     UploadModule,

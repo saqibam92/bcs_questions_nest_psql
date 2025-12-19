@@ -1,53 +1,66 @@
 // apps/web/src/types/index.ts
 
-// 1. Content Interfaces
+// ==========================================
+// 1. Content Interfaces (New Schema)
+// ==========================================
+
 export interface Question {
   id: string;
-  ques_no: number;
-  ques: string;
-  option_1: string;
-  option_2: string;
-  option_3: string;
-  option_4: string;
-  correctAnswer: string;
-  explanation: string;
-  add_favourite: boolean;
-  subjectId: string;
-  subject?: Subject;
-
-  // These will be added in the service/component for convenience
-  options?: string[];
-  correctAnswerIndex?: number;
+  text: string;          
+  optionA: string;       
+  optionB: string;       
+  optionC: string;       
+  optionD: string;       
+  correctOption: string; 
+  explanation?: string;
+  marks: number;
+  order: number;         
+  sectionId: string;
+  imageUrl?: string;
+  options?: string[]; 
 }
 
-export interface Subject {
+export interface ExamSection {
   id: string;
   name: string;
+  defaultMarks: number;
   examId: string;
-  exam?: Exam;
-  questions?: Question[]; 
+  questions: Question[];
+  order: number;
 }
 
 export interface Exam {
   id: string;
-  exam_name: string;
-  date: string; // ISO Date string
+  name: string;          
+  slug: string;
+  description?: string;
+  durationMinutes: number;
+  totalMarks: number;
+  passingMarks: number;
+  hasNegativeMarking: boolean;
+  negativeMarkingValue: number;
+  examDate?: string;     
+  isPublished: boolean;
+  sections: ExamSection[]; 
+  createdAt: string;
+
+  // Legacy stats (optional, depending on backend implementation)
   totalExaminees?: number;
   highestMark?: number;
-  subjects: Subject[];
-  createdAt: string;
 }
 
-// 2. Auth & User Interfaces
+// ==========================================
+// 2. Auth & User Interfaces (Preserved & Enhanced)
+// ==========================================
 
 // For the End-User (Mobile/Web App User)
 export interface User {
   id: string;
-  userId: string; // The custom ID (e.g., "Wym1")
+  userId: string; 
   name: string;
   email: string;
   phone?: string;
-  userType: 'FREE' | 'PAID' | 'PREMIUM'; // Updated to match your new schema requirements
+  userType: 'FREE' | 'PAID' | 'PREMIUM';
   createdAt: string;
 }
 
@@ -56,11 +69,14 @@ export interface Admin {
   id: string;
   name: string;
   email: string;
-  role: 'SUPER_ADMIN' | 'ADMIN' | 'MODERATOR';
+  // Expanded to support the new hierarchy features
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'MODERATOR' | 'EDITOR' | 'VIEWER';
   createdAt: string;
 }
 
+// ==========================================
 // 3. API & Result Interfaces
+// ==========================================
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -69,27 +85,46 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
-export interface SubjectResult {
-  subjectName: string;
+export interface SectionResult {
+  sectionName: string;
   correct: number;
   wrong: number;
   marks: number;
 }
 
+// Updated to match the new Exam Page logic
 export interface ExamResult {
-  totalScore: number;
-  totalCorrect: number;
-  totalWrong: number;
-  subjectBreakdown: SubjectResult[];
+  examName: string;
+  totalQuestions: number;
+  score: number;
+  correctCount: number;
+  wrongCount: number;
+  
+  // Map of Question ID -> Selected Option ("A", "B", "C", "D")
+  answers: Record<string, string>; 
+  
+  // Full exam data for review page
+  examData: Exam;
+  
+  // Optional breakdown
+  sectionBreakdown?: SectionResult[];
   rank?: number;
 }
 
 export interface ExamCreateDto {
-  exam_name?: string;
-  date: string | null;
+  name: string;
+  slug: string;
+  durationMinutes: number;
+  totalMarks: number;
+  passingMarks: number;
+  examDate?: string;
 }
 
 export interface ExamUpdateDto {
-  exam_name?: string;
-  date?: string | null;
+  name?: string;
+  slug?: string;
+  durationMinutes?: number;
+  totalMarks?: number;
+  passingMarks?: number;
+  examDate?: string;
 }

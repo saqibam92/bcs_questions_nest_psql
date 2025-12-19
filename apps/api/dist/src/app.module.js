@@ -12,6 +12,7 @@ const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const prisma_module_1 = require("./prisma/prisma.module");
 const exams_module_1 = require("./exams/exams.module");
+const exam_module_1 = require("./exam/exam.module");
 const upload_module_1 = require("./upload/upload.module");
 const admin_auth_module_1 = require("./auth/admin-auth.module");
 const subjects_module_1 = require("./subjects/subjects.module");
@@ -26,6 +27,7 @@ exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             prisma_module_1.PrismaModule,
+            exam_module_1.ExamModule,
             exams_module_1.ExamsModule,
             admins_module_1.AdminsModule,
             upload_module_1.UploadModule,

@@ -1,28 +1,20 @@
-// src/app/result/[examId]/page.tsx
+// apps/web/src/app/result/[examId]/page.tsx
 "use client";
 import React from "react";
 import { useResult } from "@/contexts/ResultContext";
 import { useRouter } from "next/navigation";
-import {
-  Container,
-  Paper,
-  Typography,
-  Box,
-  Grid,
-  Button,
-  Divider,
-} from "@mui/material";
+import { Container, Paper, Typography, Box, Grid, Button } from "@mui/material";
 import { CheckCircle, Cancel, RemoveCircle } from "@mui/icons-material";
 
 export default function ExamResultPage() {
-  const { result } = useResult(); // Get data passed from Exam Page
+  const { result } = useResult();
   const router = useRouter();
 
   if (!result) {
     return (
       <Container sx={{ mt: 10, textAlign: "center" }}>
-        <Typography>No result found. Please take an exam first.</Typography>
-        <Button onClick={() => router.push("/exam-list")} sx={{ mt: 2 }}>
+        <Typography gutterBottom>No result found.</Typography>
+        <Button onClick={() => router.push("/exam-list")} variant="contained">
           Go to Exams
         </Button>
       </Container>
@@ -39,9 +31,12 @@ export default function ExamResultPage() {
     examData,
   } = result;
 
+  // CRITICAL FIX: Ensure correct comparison regardless of whitespace/case
+  const normalizeOption = (val?: string) => (val || "").trim().toUpperCase();
+
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
-      {/* Score Card */}
+      {/* Score Header */}
       <Paper
         elevation={3}
         sx={{
@@ -53,37 +48,38 @@ export default function ExamResultPage() {
         }}
       >
         <Typography variant="h4" fontWeight="bold" gutterBottom color="primary">
-          {examName} Result
+          {examName}
         </Typography>
         <Typography
           variant="h2"
           fontWeight="800"
           color={score >= 40 ? "green" : "red"}
         >
-          {score.toFixed(2)}
-        </Typography>
-        <Typography color="text.secondary" gutterBottom>
-          Total Marks
+          {score.toFixed(2)}{" "}
+          <Typography component="span" variant="h5" color="text.secondary">
+            Marks
+          </Typography>
         </Typography>
 
         <Grid container spacing={2} justifyContent="center" mt={3}>
-          <Grid item>
-            <ChipData
-              label="Correct"
-              count={correctCount}
-              color="success.main"
-            />
-          </Grid>
-          <Grid item>
-            <ChipData label="Wrong" count={wrongCount} color="error.main" />
-          </Grid>
-          <Grid item>
-            <ChipData
-              label="Skipped"
-              count={totalQuestions - (correctCount + wrongCount)}
-              color="warning.main"
-            />
-          </Grid>
+          <Box mx={2} textAlign="center">
+            <Typography variant="h6" color="success.main">
+              {correctCount}
+            </Typography>
+            <Typography variant="caption">Correct</Typography>
+          </Box>
+          <Box mx={2} textAlign="center">
+            <Typography variant="h6" color="error.main">
+              {wrongCount}
+            </Typography>
+            <Typography variant="caption">Wrong</Typography>
+          </Box>
+          <Box mx={2} textAlign="center">
+            <Typography variant="h6" color="warning.main">
+              {totalQuestions - (correctCount + wrongCount)}
+            </Typography>
+            <Typography variant="caption">Skipped</Typography>
+          </Box>
         </Grid>
       </Paper>
 
@@ -91,8 +87,7 @@ export default function ExamResultPage() {
         Detailed Solution
       </Typography>
 
-      {/* Detailed Review */}
-      {examData.sections.map((sec: any) => (
+      {examData.sections.map((sec) => (
         <Box key={sec.id} mb={4}>
           <Typography
             variant="h6"
@@ -101,9 +96,11 @@ export default function ExamResultPage() {
             {sec.name}
           </Typography>
 
-          {sec.questions.map((q: any, idx: number) => {
+          {sec.questions.map((q, idx) => {
             const userAnswer = answers[q.id];
-            const isCorrect = userAnswer === q.correctOption;
+            const correctOpt = normalizeOption(q.correctOption);
+
+            const isCorrect = userAnswer === correctOpt;
             const isSkipped = !userAnswer;
 
             return (
@@ -130,18 +127,74 @@ export default function ExamResultPage() {
                   )}
                 </Box>
 
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mt: 1 }}
-                >
-                  Your Answer: <strong>{userAnswer || "Skipped"}</strong> |
-                  Correct Answer: <strong>{q.correctOption}</strong>
-                </Typography>
+                {/* Options Grid for Visual Review */}
+                <Grid container spacing={1} sx={{ mt: 2 }}>
+                  {["A", "B", "C", "D"].map((opt) => {
+                    const isThisOptionCorrect = correctOpt === opt;
+                    const isThisOptionSelected = userAnswer === opt;
+
+                    let bgcolor = "transparent";
+                    if (isThisOptionCorrect) bgcolor = "#e8f5e9"; // Green bg for correct answer
+                    if (isThisOptionSelected && !isThisOptionCorrect)
+                      bgcolor = "#ffebee"; // Red bg for wrong selection
+
+                    return (
+                      <Grid size={{xs:12, sm:6}} key={opt}>
+                        <Box
+                          sx={{
+                            p: 1,
+                            border: "1px solid #eee",
+                            borderRadius: 1,
+                            bgcolor,
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Typography
+                            fontWeight="bold"
+                            color="text.secondary"
+                            sx={{ mr: 1 }}
+                          >
+                            {opt}.
+                          </Typography>
+                          <Typography sx={{ flexGrow: 1 }}>
+                            {(q as any)[`option${opt}`]}
+                          </Typography>
+
+                          {isThisOptionCorrect && (
+                            <CheckCircle
+                              fontSize="small"
+                              color="success"
+                              sx={{ ml: "auto" }}
+                            />
+                          )}
+                          {isThisOptionSelected && !isThisOptionCorrect && (
+                            <Cancel
+                              fontSize="small"
+                              color="error"
+                              sx={{ ml: "auto" }}
+                            />
+                          )}
+                        </Box>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
 
                 {q.explanation && (
-                  <Box mt={2} p={2} bgcolor="#f5f5f5" borderRadius={1}>
-                    <Typography variant="caption" fontWeight="bold">
+                  <Box
+                    sx={{
+                      mt: 2,
+                      p: 1.5,
+                      bgcolor: "#f5f5f5",
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      fontWeight="bold"
+                      display="block"
+                    >
                       Explanation:
                     </Typography>
                     <Typography variant="body2">{q.explanation}</Typography>
@@ -153,24 +206,5 @@ export default function ExamResultPage() {
         </Box>
       ))}
     </Container>
-  );
-}
-
-function ChipData({ label, count, color }: any) {
-  return (
-    <Box
-      sx={{
-        border: `1px solid`,
-        borderColor: color,
-        borderRadius: 2,
-        px: 3,
-        py: 1,
-      }}
-    >
-      <Typography variant="h6" fontWeight="bold" color={color}>
-        {count}
-      </Typography>
-      <Typography variant="caption">{label}</Typography>
-    </Box>
   );
 }

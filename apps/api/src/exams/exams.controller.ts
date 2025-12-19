@@ -34,9 +34,16 @@ export class ExamsController {
   }
 
   // Public route - anyone can see a single exam
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.examsService.findOne(id);
+  // }
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.examsService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const exam = await this.examsService.findOne(id);
+    if (!exam) throw new Error('Exam not found');
+    return exam;
   }
 
   @UseGuards(AdminAuthGuard, RolesGuard)
