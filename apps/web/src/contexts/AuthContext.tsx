@@ -1,171 +1,375 @@
-// src/contexts/AuthContext.tsx
+// apps/web/src/contexts/AuthContext.tsx
 "use client";
-import React, {
+
+import {
   createContext,
   useContext,
-  useReducer,
   useEffect,
+  useReducer,
   ReactNode,
+  useMemo,
+  useCallback,
 } from "react";
-import api from "@/lib/api";
 import Cookies from "js-cookie";
-import type { User } from "@/types";
+import api from "@/lib/api";
+import type { AuthUser, Role, UserType } from "@/types";
 
-// 1. Define State and Action Types
+/* ---------------------------------- */
+/* Auth State                         */
+/* ---------------------------------- */
+
 interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
+  user: AuthUser | null;
   loading: boolean;
-  error: string | null;
+  hydrated: boolean;
 }
 
-type AuthAction =
-  | { type: "LOGIN_START" }
-  | { type: "AUTH_SUCCESS"; payload: { user: User } }
-  | { type: "AUTH_ERROR"; payload: string }
-  | { type: "LOGOUT" }
-  | { type: "UPDATE_USER"; payload: { user: User } };
+/* ---------------------------------- */
+/* Reducer                            */
+/* ---------------------------------- */
 
-interface AuthContextType extends AuthState {
-  login: (loginId: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (data: { name: string, email: string, phone?: string, password: string }) => Promise<{ success: boolean; error?: string }>;
-  updateUser: (data: { name?: string; email?: string; phone?: string; password?: string }) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
-}
-
-// 2. Create Context and Reducer
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const authReducer = (state: AuthState, action: AuthAction): AuthState => {
-  switch (action.type) {
-    case "LOGIN_START":
-      return { ...state, loading: true, error: null };
-    case "AUTH_SUCCESS":
-      return {
-        ...state,
-        loading: false,
-        user: action.payload.user,
-        isAuthenticated: true,
-        error: null,
-      };
-    case "AUTH_ERROR":
-      return {
-        ...state,
-        loading: false,
-        error: action.payload,
-        user: null,
-        isAuthenticated: false,
-      };
-    case "LOGOUT":
-      return {
-        user: null,
-        isAuthenticated: false,
-        loading: false,
-        error: null,
-      };
-    case "UPDATE_USER":
-      return {
-        ...state,
-        user: action.payload.user,
-        loading: false,
-        error: null,
-      };
-    default:
-      return state;
-  }
-};
+type Action =
+  | { type: "INIT_START" }
+  | { type: "INIT_SUCCESS"; payload: AuthUser }
+  | { type: "LOGOUT" };
 
 const initialState: AuthState = {
   user: null,
-  isAuthenticated: false,
   loading: true,
-  error: null,
+  hydrated: false,
 };
 
-// 3. Create Provider
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+function reducer(state: AuthState, action: Action): AuthState {
+  switch (action.type) {
+    case "INIT_START":
+      return { ...state, loading: true };
 
+    case "INIT_SUCCESS":
+      return {
+        user: action.payload,
+        loading: false,
+        hydrated: true,
+      };
+
+    case "LOGOUT":
+      return {
+        user: null,
+        loading: false,
+        hydrated: true,
+      };
+
+    default:
+      return state;
+  }
+}
+
+/* ---------------------------------- */
+/* Context                            */
+/* ---------------------------------- */
+
+interface AuthContextValue extends AuthState {
+  isAuthenticated: boolean;
+
+  // Authority
+  hasRole: (roles: Role[]) => boolean;
+  isAdmin: boolean;
+
+  // Entitlement
+  hasSubscription: (types: UserType[]) => boolean;
+  isPaidUser: boolean;
+
+  login: (token: string, userData: AuthUser) => void;
+  logout: () => void;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+/* ---------------------------------- */
+/* Provider                           */
+/* ---------------------------------- */
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  // Initial auth hydration (runs only once on mount)
   useEffect(() => {
-    const token = Cookies.get("token");
-    if (!token) {
-      dispatch({ type: "LOGOUT" });
-      return;
-    }
+    let isMounted = true;
 
-    const loadUser = async () => {
-      dispatch({ type: "LOGIN_START" });
+    const init = async () => {
+      // Check for tokens
+      const userToken = Cookies.get("token");
+      const adminToken = Cookies.get("access_token");
+
+      if (!userToken && !adminToken) {
+        if (isMounted) {
+          dispatch({ type: "LOGOUT" });
+        }
+        return;
+      }
+
       try {
-        const res = await api.get("/api/auth/me");
-        dispatch({ type: "AUTH_SUCCESS", payload: { user: res.data.user } });
+        let userData: AuthUser | null = null;
+
+        // Try admin endpoint first if admin token exists
+        if (adminToken) {
+          try {
+            const res = await api.get("/api/auth/admin/me", {
+              headers: { Authorization: `Bearer ${adminToken}` },
+            });
+            userData = res.data;
+          } catch (err) {
+            console.error("Admin auth failed, trying user auth:", err);
+            Cookies.remove("access_token");
+          }
+        }
+
+        // Try user endpoint if admin failed or no admin token
+        if (!userData && userToken) {
+          try {
+            const res = await api.get("/api/auth/me", {
+              headers: { Authorization: `Bearer ${userToken}` },
+            });
+            userData = {
+              ...res.data.user,
+              role: res.data.user.role || "USER",
+            };
+          } catch (err) {
+            console.error("User auth failed:", err);
+            Cookies.remove("token");
+          }
+        }
+
+        if (isMounted) {
+          if (userData) {
+            dispatch({ type: "INIT_SUCCESS", payload: userData });
+          } else {
+            dispatch({ type: "LOGOUT" });
+          }
+        }
       } catch (err) {
-        console.error("Load user error:", err);
-        Cookies.remove("token");
-        dispatch({ type: "AUTH_ERROR", payload: "Session expired." });
+        console.error("Auth initialization error:", err);
+        if (isMounted) {
+          Cookies.remove("token");
+          Cookies.remove("access_token");
+          dispatch({ type: "LOGOUT" });
+        }
       }
     };
 
-    loadUser();
+    init();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependency array - runs only once
+
+  const login = useCallback((token: string, userData: AuthUser) => {
+    // Set appropriate cookie based on role
+    if (["SUPER_ADMIN", "ADMIN", "MODERATOR"].includes(userData.role)) {
+      Cookies.set("access_token", token, { expires: 1 });
+    } else {
+      Cookies.set("token", token, { expires: 7 });
+    }
+    dispatch({ type: "INIT_SUCCESS", payload: userData });
   }, []);
 
-  const login = async (loginId: string, password: string) => {
-    dispatch({ type: "LOGIN_START" });
-    try {
-      const res = await api.post("/api/auth/login", { loginId, password });
-      Cookies.set("token", res.data.access_token, { expires: 7, secure: true });
-      dispatch({ type: "AUTH_SUCCESS", payload: { user: res.data.user } });
-      return { success: true };
-    } catch (err) {
-      const message = (err as Error).message || "Login failed";
-      dispatch({ type: "AUTH_ERROR", payload: message });
-      return { success: false, error: message };
-    }
-  };
-
-  const register = async (data: { name: string, email: string, phone?: string, password: string }) => {
-    dispatch({ type: "LOGIN_START" });
-    try {
-      const res = await api.post("/api/auth/register", data);
-      Cookies.set("token", res.data.access_token, { expires: 7, secure: true });
-      dispatch({ type: "AUTH_SUCCESS", payload: { user: res.data.user } });
-      return { success: true };
-    } catch (err) {
-      const message = (err as Error).message || "Registration failed";
-      dispatch({ type: "AUTH_ERROR", payload: message });
-      return { success: false, error: message };
-    }
-  };
-
-  const updateUser = async (data: { name?: string; email?: string; phone?: string; password?: string }) => {
-    try {
-      const res = await api.put("/api/auth/update", data);
-      dispatch({ type: "UPDATE_USER", payload: { user: res.data.user } });
-      return { success: true };
-    } catch (err) {
-      const message = (err as Error).message || "Failed to update profile";
-      return { success: false, error: message };
-    }
-  };
-
-  const logout = () => {
+  const logout = useCallback(() => {
     Cookies.remove("token");
+    Cookies.remove("access_token");
     dispatch({ type: "LOGOUT" });
-  };
+  }, []);
 
-  return (
-    <AuthContext.Provider
-      value={{ ...state, login, register, updateUser, logout }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  /* ---------------------------------- */
+  /* Derived Capabilities               */
+  /* ---------------------------------- */
 
-// 4. Create useAuth Hook
+  const value = useMemo<AuthContextValue>(() => {
+    const user = state.user;
+    const role = user?.role || "USER";
+
+    return {
+      ...state,
+      isAuthenticated: !!user,
+
+      // Authority
+      hasRole: (roles) => !!user && roles.includes(role),
+      isAdmin: !!user && ["SUPER_ADMIN", "ADMIN", "MODERATOR"].includes(role),
+
+      // Entitlement
+      hasSubscription: (types) => !!user && types.includes(user.userType),
+      isPaidUser: !!user && user.userType !== "FREE",
+
+      login,
+      logout,
+    };
+  }, [state, login, logout]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+/* ---------------------------------- */
+/* Hook                               */
+/* ---------------------------------- */
+
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error("useAuth must be used within AuthProvider");
   }
-  return context;
-};
+  return ctx;
+};  
+
+// // // apps/web/src/contexts/AuthContext."use client";
+// "use client";
+
+// import {
+//   createContext,
+//   useContext,
+//   useEffect,
+//   useReducer,
+//   ReactNode,
+//   useMemo,
+// } from "react";
+// import Cookies from "js-cookie";
+// import api from "@/lib/api";
+// import type { AuthUser, Role, UserType } from "@/types";
+
+// /* ---------------------------------- */
+// /* Auth State                          */
+// /* ---------------------------------- */
+
+// interface AuthState {
+//   user: AuthUser | null;
+//   loading: boolean;
+//   hydrated: boolean;
+// }
+
+// /* ---------------------------------- */
+// /* Reducer                             */
+// /* ---------------------------------- */
+
+// type Action =
+//   | { type: "INIT_START" }
+//   | { type: "INIT_SUCCESS"; payload: AuthUser }
+//   | { type: "LOGOUT" };
+
+// const initialState: AuthState = {
+//   user: null,
+//   loading: true,
+//   hydrated: false,
+// };
+
+// function reducer(state: AuthState, action: Action): AuthState {
+//   switch (action.type) {
+//     case "INIT_START":
+//       return { ...state, loading: true };
+
+//     case "INIT_SUCCESS":
+//       return {
+//         user: action.payload,
+//         loading: false,
+//         hydrated: true,
+//       };
+
+//     case "LOGOUT":
+//       return {
+//         user: null,
+//         loading: false,
+//         hydrated: true,
+//       };
+
+//     default:
+//       return state;
+//   }
+// }
+
+// /* ---------------------------------- */
+// /* Context                             */
+// /* ---------------------------------- */
+
+// interface AuthContextValue extends AuthState {
+//   isAuthenticated: boolean;
+
+//   // Authority
+//   hasRole: (roles: Role[]) => boolean;
+//   isAdmin: boolean;
+
+//   // Entitlement
+//   hasSubscription: (types: UserType[]) => boolean;
+//   isPaidUser: boolean;
+
+//   logout: () => void;
+// }
+
+// const AuthContext = createContext<AuthContextValue | null>(null);
+
+// /* ---------------------------------- */
+// /* Provider                            */
+// /* ---------------------------------- */
+
+// export function AuthProvider({ children }: { children: ReactNode }) {
+//   const [state, dispatch] = useReducer(reducer, initialState);
+
+//   // Initial auth hydration (SSR-safe)
+//   useEffect(() => {
+//     const token = Cookies.get("auth_token");
+//     if (!token) {
+//       dispatch({ type: "LOGOUT" });
+//       return;
+//     }
+
+//     const init = async () => {
+//       try {
+//         const res = await api.get("/api/auth/me");
+//         dispatch({ type: "INIT_SUCCESS", payload: res.data.user });
+//       } catch {
+//         Cookies.remove("auth_token");
+//         dispatch({ type: "LOGOUT" });
+//       }
+//     };
+
+//     init();
+//   }, []);
+
+//   const logout = () => {
+//     Cookies.remove("auth_token");
+//     dispatch({ type: "LOGOUT" });
+//   };
+
+//   /* ---------------------------------- */
+//   /* Derived Capabilities (important)   */
+//   /* ---------------------------------- */
+
+//   const value = useMemo<AuthContextValue>(() => {
+//     const user = state.user;
+
+//     return {
+//       ...state,
+//       isAuthenticated: !!user,
+
+//       // Authority
+//       hasRole: (roles) => !!user && roles.includes(user.role),
+//       isAdmin: !!user && ["SUPER_ADMIN", "ADMIN", "MODERATOR"].includes(user.role),
+
+//       // Entitlement
+//       hasSubscription: (types) => !!user && types.includes(user.userType),
+//       isPaidUser: !!user && user.userType !== "FREE",
+
+//       logout,
+//     };
+//   }, [state]);
+
+//   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+// }
+
+// /* ---------------------------------- */
+// /* Hook                                */
+// /* ---------------------------------- */
+
+// export const useAuth = () => {
+//   const ctx = useContext(AuthContext);
+//   if (!ctx) {
+//     throw new Error("useAuth must be used within AuthProvider");
+//   }
+//   return ctx;
+// };

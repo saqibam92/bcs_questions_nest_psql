@@ -54,25 +54,49 @@ export interface Exam {
 // ==========================================
 
 // For the End-User (Mobile/Web App User)
-export interface User {
+// export interface User {
+//   id: string;
+//   userId: string; 
+//   name: string;
+//   email: string;
+//   phone?: string;
+//   userType: 'FREE' | 'PAID' | 'PREMIUM';
+//   createdAt: string;
+// }
+
+// // For the Admin Panel User (Staff)
+// export interface Admin {
+//   id: string;
+//   name: string;
+//   email: string;
+//   // Expanded to support the new hierarchy features
+//   role: 'SUPER_ADMIN' | 'ADMIN' | 'MODERATOR' | 'EDITOR' | 'VIEWER';
+//   createdAt: string;
+// }
+
+// export type AuthUser = User | Admin;
+
+export type Role =
+  | "SUPER_ADMIN"
+  | "ADMIN"
+  | "MODERATOR"
+  | "EDITOR"
+  | "VIEWER"
+  | "USER";
+
+export type UserType = "FREE" | "PAID" | "PREMIUM";
+
+export interface AuthUser {
   id: string;
-  userId: string; 
   name: string;
   email: string;
-  phone?: string;
-  userType: 'FREE' | 'PAID' | 'PREMIUM';
+
+  role: Role;
+  userType: UserType;
+
   createdAt: string;
 }
 
-// For the Admin Panel User (Staff)
-export interface Admin {
-  id: string;
-  name: string;
-  email: string;
-  // Expanded to support the new hierarchy features
-  role: 'SUPER_ADMIN' | 'ADMIN' | 'MODERATOR' | 'EDITOR' | 'VIEWER';
-  createdAt: string;
-}
 
 // ==========================================
 // 3. API & Result Interfaces

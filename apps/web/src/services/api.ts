@@ -1,6 +1,6 @@
 // src/services/api.ts
 import api from '@/lib/api'; 
-import { Exam, Subject, Question } from '@/types';
+import { Exam, Question } from '@/types';
 
 // Note: The NestJS API returns data directly, not wrapped in an `ApiResponse` object.
 // We will return `data` from the Axios response.
@@ -47,25 +47,25 @@ export const adminDeleteExam = async (id: string) => {
 };
 
 // --- Subjects ---
-export const adminGetSubjects = async () => {
-  return api.get<Subject[]>('/subjects');
-};
+// export const adminGetSubjects = async () => {
+//   return api.get<Subject[]>('/subjects');
+// };
 
-export const adminGetSubject = async (id: string) => {
-  return api.get<Subject>(`/subjects/${id}`);
-};
+// export const adminGetSubject = async (id: string) => {
+//   return api.get<Subject>(`/subjects/${id}`);
+// };
 
-export const adminCreateSubject = async (data: any) => {
-  return api.post('/subjects', data);
-};
+// export const adminCreateSubject = async (data: any) => {
+//   return api.post('/subjects', data);
+// };
 
-export const adminUpdateSubject = async (id: string, data: any) => {
-  return api.patch(`/subjects/${id}`, data);
-};
+// export const adminUpdateSubject = async (id: string, data: any) => {
+//   return api.patch(`/subjects/${id}`, data);
+// };
 
-export const adminDeleteSubject = async (id: string) => {
-  return api.delete(`/subjects/${id}`);
-};
+// export const adminDeleteSubject = async (id: string) => {
+//   return api.delete(`/subjects/${id}`);
+// };
 
 // --- Questions ---
 export const adminGetQuestions = async () => {

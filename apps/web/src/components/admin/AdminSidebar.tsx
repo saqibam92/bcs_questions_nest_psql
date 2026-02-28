@@ -1,11 +1,10 @@
-// // apps/web/src/components/admin/AdminSidebar.tsx
-
+// apps/web/src/components/admin/AdminSidebar.tsx
 "use client";
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useAdminAuth } from "@/contexts/AdminAuthContext";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Box,
   List,
@@ -17,6 +16,8 @@ import {
   Divider,
   Button,
   Paper,
+  Avatar,
+  Chip,
 } from "@mui/material";
 import {
   Dashboard,
@@ -34,8 +35,9 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({ width }: AdminSidebarProps) {
-  const { logout, admin } = useAdminAuth();
+  const { logout, user } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
 
   const navItems = [
     { name: "Dashboard", href: "/admin", icon: <Dashboard /> },
@@ -50,7 +52,7 @@ export default function AdminSidebar({ width }: AdminSidebarProps) {
     { name: "Videos", href: "/admin/videos", icon: <VideoLibrary /> },
   ];
 
-  if (admin?.role === "SUPER_ADMIN") {
+  if (user?.role === "SUPER_ADMIN") {
     navItems.push({
       name: "Manage Admins",
       href: "/admin/users",
@@ -58,47 +60,81 @@ export default function AdminSidebar({ width }: AdminSidebarProps) {
     });
   }
 
+  const handleLogout = () => {
+    logout();
+    router.push("/admin-login");
+  };
+
   return (
     <Paper
       elevation={0}
       sx={{
         width: width,
         height: "100vh",
-        position: "fixed", // Keeps sidebar visible while scrolling main content
+        position: "fixed",
         top: 0,
         left: 0,
-        bgcolor: "#111827", // Dark Gray/Black theme
+        bgcolor: "#111827",
         color: "#e5e7eb",
         borderRadius: 0,
         borderRight: "1px solid #374151",
         display: "flex",
         flexDirection: "column",
-        zIndex: 1200, // Higher than main content, but check for dialogs
+        zIndex: 1200,
+        overflowY: "auto",
       }}
     >
       {/* Header */}
-      <Box sx={{ p: 3, textAlign: "center" }}>
+      <Box
+        sx={{ p: 3, textAlign: "center", borderBottom: "1px solid #374151" }}
+      >
         <Typography
           variant="h5"
           fontWeight="bold"
           color="white"
           letterSpacing={1}
+          sx={{ mb: 1 }}
         >
           BCS Admin
         </Typography>
-        <Typography
-          variant="caption"
-          color="gray"
-          sx={{ display: "block", mt: 0.5 }}
-        >
-          {admin?.role || "Staff"}
-        </Typography>
+
+        {user && (
+          <Box sx={{ mt: 2 }}>
+            <Avatar
+              sx={{
+                width: 48,
+                height: 48,
+                mx: "auto",
+                bgcolor: "#2563eb",
+                fontSize: "1.2rem",
+                fontWeight: "bold",
+              }}
+            >
+              {user.name?.[0]?.toUpperCase() || "A"}
+            </Avatar>
+            <Typography
+              variant="body2"
+              sx={{ mt: 1, color: "#9ca3af", fontWeight: 500 }}
+            >
+              {user.name}
+            </Typography>
+            <Chip
+              label={user.role}
+              size="small"
+              sx={{
+                mt: 1,
+                bgcolor: "#374151",
+                color: "#e5e7eb",
+                fontSize: "0.7rem",
+                height: 20,
+              }}
+            />
+          </Box>
+        )}
       </Box>
 
-      <Divider sx={{ bgcolor: "#374151", mb: 2 }} />
-
       {/* Navigation */}
-      <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+      <Box sx={{ flexGrow: 1, overflowY: "auto", py: 2 }}>
         <List>
           {navItems.map((item) => {
             const isActive = pathname === item.href;
@@ -114,7 +150,7 @@ export default function AdminSidebar({ width }: AdminSidebarProps) {
                       mx: 1,
                       borderRadius: 1,
                       "&.Mui-selected": {
-                        bgcolor: "#2563eb", // Blue-600
+                        bgcolor: "#2563eb",
                         color: "white",
                         "&:hover": { bgcolor: "#1d4ed8" },
                         "& .MuiListItemIcon-root": { color: "white" },
@@ -152,7 +188,7 @@ export default function AdminSidebar({ width }: AdminSidebarProps) {
       {/* Footer / Logout */}
       <Box sx={{ p: 2 }}>
         <Button
-          onClick={logout}
+          onClick={handleLogout}
           fullWidth
           variant="contained"
           color="error"
@@ -166,6 +202,173 @@ export default function AdminSidebar({ width }: AdminSidebarProps) {
   );
 }
 
+// // // apps/web/src/components/admin/AdminSidebar.tsx
+
+// "use client";
+
+// import React from "react";
+// import Link from "next/link";
+// import { usePathname } from "next/navigation";
+// import { useAdminAuth } from "@/contexts/AdminAuthContext";
+// import {
+//   Box,
+//   List,
+//   ListItem,
+//   ListItemButton,
+//   ListItemIcon,
+//   ListItemText,
+//   Typography,
+//   Divider,
+//   Button,
+//   Paper,
+// } from "@mui/material";
+// import {
+//   Dashboard,
+//   Assignment,
+//   Category,
+//   HelpOutline,
+//   Logout,
+//   AdminPanelSettings,
+//   CloudUpload,
+//   VideoLibrary,
+// } from "@mui/icons-material";
+
+// interface AdminSidebarProps {
+//   width: number;
+// }
+
+// export default function AdminSidebar({ width }: AdminSidebarProps) {
+//   const { logout, admin } = useAdminAuth();
+//   const pathname = usePathname();
+
+//   const navItems = [
+//     { name: "Dashboard", href: "/admin", icon: <Dashboard /> },
+//     { name: "Exams", href: "/admin/exams", icon: <Assignment /> },
+//     { name: "Subjects", href: "/admin/subjects", icon: <Category /> },
+//     { name: "Questions", href: "/admin/questions", icon: <HelpOutline /> },
+//     {
+//       name: "Bulk Upload",
+//       href: "/admin/upload-questions",
+//       icon: <CloudUpload />,
+//     },
+//     { name: "Videos", href: "/admin/videos", icon: <VideoLibrary /> },
+//   ];
+
+//   if (admin?.role === "SUPER_ADMIN") {
+//     navItems.push({
+//       name: "Manage Admins",
+//       href: "/admin/users",
+//       icon: <AdminPanelSettings />,
+//     });
+//   }
+
+//   return (
+//     <Paper
+//       elevation={0}
+//       sx={{
+//         width: width,
+//         height: "100vh",
+//         position: "fixed", // Keeps sidebar visible while scrolling main content
+//         top: 0,
+//         left: 0,
+//         bgcolor: "#111827", // Dark Gray/Black theme
+//         color: "#e5e7eb",
+//         borderRadius: 0,
+//         borderRight: "1px solid #374151",
+//         display: "flex",
+//         flexDirection: "column",
+//         zIndex: 1200, // Higher than main content, but check for dialogs
+//       }}
+//     >
+//       {/* Header */}
+//       <Box sx={{ p: 3, textAlign: "center" }}>
+//         <Typography
+//           variant="h5"
+//           fontWeight="bold"
+//           color="white"
+//           letterSpacing={1}
+//         >
+//           BCS Admin
+//         </Typography>
+//         <Typography
+//           variant="caption"
+//           color="gray"
+//           sx={{ display: "block", mt: 0.5 }}
+//         >
+//           {admin?.role || "Staff"}
+//         </Typography>
+//       </Box>
+
+//       <Divider sx={{ bgcolor: "#374151", mb: 2 }} />
+
+//       {/* Navigation */}
+//       <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+//         <List>
+//           {navItems.map((item) => {
+//             const isActive = pathname === item.href;
+//             return (
+//               <ListItem key={item.name} disablePadding sx={{ mb: 0.5 }}>
+//                 <Link
+//                   href={item.href}
+//                   style={{ textDecoration: "none", width: "100%" }}
+//                 >
+//                   <ListItemButton
+//                     selected={isActive}
+//                     sx={{
+//                       mx: 1,
+//                       borderRadius: 1,
+//                       "&.Mui-selected": {
+//                         bgcolor: "#2563eb", // Blue-600
+//                         color: "white",
+//                         "&:hover": { bgcolor: "#1d4ed8" },
+//                         "& .MuiListItemIcon-root": { color: "white" },
+//                       },
+//                       "&:hover": {
+//                         bgcolor: "rgba(255,255,255,0.08)",
+//                       },
+//                     }}
+//                   >
+//                     <ListItemIcon
+//                       sx={{
+//                         color: isActive ? "white" : "#9ca3af",
+//                         minWidth: 40,
+//                       }}
+//                     >
+//                       {item.icon}
+//                     </ListItemIcon>
+//                     <ListItemText
+//                       primary={item.name}
+//                       primaryTypographyProps={{
+//                         fontSize: "0.95rem",
+//                         fontWeight: 500,
+//                       }}
+//                     />
+//                   </ListItemButton>
+//                 </Link>
+//               </ListItem>
+//             );
+//           })}
+//         </List>
+//       </Box>
+
+//       <Divider sx={{ bgcolor: "#374151" }} />
+
+//       {/* Footer / Logout */}
+//       <Box sx={{ p: 2 }}>
+//         <Button
+//           onClick={logout}
+//           fullWidth
+//           variant="contained"
+//           color="error"
+//           startIcon={<Logout />}
+//           sx={{ textTransform: "none", fontWeight: "bold" }}
+//         >
+//           Logout
+//         </Button>
+//       </Box>
+//     </Paper>
+//   );
+// }
 
 // "use client";
 // import React from "react";
