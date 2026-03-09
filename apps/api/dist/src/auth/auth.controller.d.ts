@@ -29,8 +29,8 @@ export declare class AuthController {
             name: string;
             createdAt: Date;
             updatedAt: Date;
-            phone: string | null;
             userId: string;
+            phone: string | null;
             userType: import(".prisma/client").$Enums.UserType;
         };
     }>;
