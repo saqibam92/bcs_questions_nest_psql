@@ -1,5 +1,4 @@
 // apps/api/prisma/schema.prisma
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -14,28 +13,27 @@ generator client {
 // -----------------
 
 model Exam {
-id               String        @id @default(cuid())
-  name             String        @default("Untitled Exam") 
-  slug             String        @unique @default("untitled-exam") 
-  description      String?       @db.Text
-  durationMinutes  Int           @default(60) 
-  totalMarks       Float         @default(100) 
-  passingMarks     Float         @default(40)
-  examDate         DateTime?
-  isPublished      Boolean       @default(false)
+  id                   String        @id @default(cuid())
+  name                 String        @default("Untitled Exam") 
+  slug                 String        @unique @default("untitled-exam") 
+  description          String?       @db.Text
+  durationMinutes      Int           @default(60) 
+  totalMarks           Float         @default(100) 
+  passingMarks         Float         @default(40)
+  examDate             DateTime?
+  isPublished          Boolean       @default(false)
+  hasNegativeMarking   Boolean       @default(false)
+  negativeMarkingValue Float         @default(0)
   
-  hasNegativeMarking   Boolean   @default(false)
-  negativeMarkingValue Float     @default(0)
+  sections             ExamSection[]
+  attempts             ExamAttempt[] // Added for core exam flow
 
-  sections         ExamSection[]
-
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 
   @@map("exams")
 }
 
-// Reusable Subject Pool (e.g., "English", "Math")
 model Subject {
   id        String        @id @default(cuid())
   name      String        @unique
@@ -44,7 +42,6 @@ model Subject {
   @@map("subjects")
 }
 
-// Sections within a specific Exam (New Model)
 model ExamSection {
   id              String     @id @default(cuid())
   examId          String
@@ -53,56 +50,69 @@ model ExamSection {
   subjectId       String?
   subject         Subject?   @relation(fields: [subjectId], references: [id])
   
-  name            String     // e.g., "Part A: General Knowledge"
+  name            String     
   order           Int        @default(0)
   defaultMarks    Float      @default(1)
   
   questions       Question[]
 
+  // Critical indexes added for performance
+  @@index([examId])
+  @@index([subjectId])
   @@map("exam_sections")
 }
 
 model Question {
-  id              String      @id @default(cuid())
-  // Made optional for migration compatibility, must be filled later!
+  id              String       @id @default(cuid())
   sectionId       String?
   section         ExamSection? @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   
-  // Renamed from 'ques', added default
-  text            String      @db.Text @default("") 
-  optionA         String      @default("") // Added default
-  optionB         String      @default("") // Added default
-  optionC         String      @default("") // Added default
-  optionD         String      @default("") // Added default
-  correctOption   String      @default("A") // Renamed from 'correctAnswer', added default
+  text            String       @db.Text @default("") 
+  optionA         String       @default("") 
+  optionB         String       @default("") 
+  optionC         String       @default("") 
+  optionD         String       @default("") 
+  correctOption   String       @default("A") 
   
-  explanation     String?     @db.Text
+  explanation     String?      @db.Text
   imageUrl        String?
-  marks           Float       @default(1) // Added default
+  marks           Float        @default(1) 
+  order           Int          @default(0)
+  
+  answers         ExamAnswer[] // Added for core exam flow
 
-  order           Int         @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-
+  // Critical indexes added for performance
+  @@index([sectionId])
   @@map("questions")
 }
 
 // -----------------
-// AUTH MODELS (Unchanged)
+// AUTH MODELS
 // -----------------
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  phone     String?  @unique
-  password  String
-  userId    String   @unique @default(cuid())
-  userType  UserType @default(FREE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String        @id @default(cuid())
+  name          String
+  email         String        @unique
+  phone         String?       @unique
+  password      String?       
+  googleId      String?       @unique
+  avatarUrl     String?
+  emailVerified Boolean       @default(false)
+  
+  userId        String        @unique @default(cuid())
+  userType      UserType      @default(FREE)
+  
+  attempts      ExamAttempt[] 
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
+  @@index([email])
+  @@index([googleId])
   @@map("users")
 }
 
@@ -118,6 +128,49 @@ model Admin {
   @@map("admins")
 }
 
+// -----------------
+// EXAM EXECUTION MODELS (NEW - MINIMAL)
+// -----------------
+// These are required so the client can actually test submitting an exam.
+
+model ExamAttempt {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examId      String
+  exam        Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  
+  score       Float        @default(0)
+  isCompleted Boolean      @default(false)
+  
+  answers     ExamAnswer[]
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([examId])
+  @@map("exam_attempts")
+}
+
+model ExamAnswer {
+  id             String      @id @default(cuid())
+  attemptId      String
+  attempt        ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId     String
+  question       Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  selectedOption String?     
+  isCorrect      Boolean?
+  
+  createdAt      DateTime    @default(now())
+
+  @@unique([attemptId, questionId])
+  @@index([attemptId])
+  @@index([questionId])
+  @@map("exam_answers")
+}
+
 enum UserType {
   FREE
   PAID
@@ -125,7 +178,7 @@ enum UserType {
 }
 
 enum AdminRole {
-SUPER_ADMIN
+  SUPER_ADMIN
   ADMIN
   MODERATOR
   EDITOR

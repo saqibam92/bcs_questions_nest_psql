@@ -1,6 +1,6 @@
 import { Strategy } from 'passport-jwt';
 import { UserService } from '../user/user.service';
-declare const JwtStrategy_base: new (...args: [opt: import("passport-jwt").StrategyOptionsWithoutRequest] | [opt: import("passport-jwt").StrategyOptionsWithRequest]) => Strategy & {
+declare const JwtStrategy_base: new (...args: [opt: import("passport-jwt").StrategyOptionsWithRequest] | [opt: import("passport-jwt").StrategyOptionsWithoutRequest]) => Strategy & {
     validate(...args: any[]): unknown;
 };
 export declare class JwtStrategy extends JwtStrategy_base {
@@ -12,8 +12,8 @@ export declare class JwtStrategy extends JwtStrategy_base {
         name: string;
         createdAt: Date;
         updatedAt: Date;
-        phone: string | null;
         userId: string;
+        phone: string | null;
         userType: import(".prisma/client").$Enums.UserType;
     }>;
 }
