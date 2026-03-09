@@ -1,4 +1,3 @@
-// apps/web/src/components/layout/Sidebar.tsx
 "use client";
 
 import React from "react";
@@ -14,9 +13,8 @@ import {
   ListItemText,
   Divider,
   Button,
-  Chip,
-  Skeleton,
 } from "@mui/material";
+
 import {
   Home,
   AccountCircle,
@@ -31,9 +29,10 @@ import {
   Dashboard,
   Login as LoginIcon,
 } from "@mui/icons-material";
+
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 interface SidebarProps {
   open: boolean;
@@ -41,59 +40,93 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
-  const { user, isAuthenticated, isAdmin, logout, hydrated, loading } =
-    useAuth();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const router = useRouter();
-
-  /* ---------------- Navigation Groups ---------------- */
+  const pathname = usePathname();
 
   const primaryMenu = [
-    { text: "হোমপেজ", icon: <Home />, path: "/" },
+    { text: "হোমপেজ", icon: <Home fontSize="small" />, path: "/" },
     ...(isAuthenticated
       ? [
           {
             text: "আপনার প্রোফাইল",
-            icon: <AccountCircle />,
+            icon: <AccountCircle fontSize="small" />,
             path: "/profile",
           },
         ]
       : []),
-    { text: "প্যাকেজ কিনুন", icon: <ShoppingCart />, path: "/packages" },
+    {
+      text: "প্যাকেজ কিনুন",
+      icon: <ShoppingCart fontSize="small" />,
+      path: "/packages",
+    },
   ];
 
   const secondaryMenu = [
-    { text: "সেন্ট্রাল রুটিন", icon: <EventNote />, path: "/routine" },
-    { text: "ব্যাবহারের নিয়ম", icon: <Gavel />, path: "/rules" },
-    { text: "যোগাযোগ", icon: <ContactSupport />, path: "/contact" },
+    {
+      text: "সেন্ট্রাল রুটিন",
+      icon: <EventNote fontSize="small" />,
+      path: "/routine",
+    },
+    {
+      text: "ব্যবহারের নিয়ম",
+      icon: <Gavel fontSize="small" />,
+      path: "/rules",
+    },
+    {
+      text: "যোগাযোগ",
+      icon: <ContactSupport fontSize="small" />,
+      path: "/contact",
+    },
   ];
 
   const tertiaryMenu = [
-    { text: "আমাদের সম্পর্কে", icon: <Info />, path: "/about" },
-    { text: "পরামর্শকগণ", icon: <People />, path: "/consultants" },
-    { text: "নীতিসমূহ", icon: <Policy />, path: "/privacy" },
+    {
+      text: "আমাদের সম্পর্কে",
+      icon: <Info fontSize="small" />,
+      path: "/about",
+    },
+    {
+      text: "আমাদের পরামর্শকগণ",
+      icon: <People fontSize="small" />,
+      path: "/consultants",
+    },
+    { text: "নীতিসমূহ", icon: <Policy fontSize="small" />, path: "/privacy" },
   ];
 
   const renderList = (items: typeof primaryMenu) => (
-    <List>
-      {items.map((item) => (
-        <ListItem key={item.text} disablePadding>
-          <ListItemButton
-            component={Link}
-            href={item.path}
-            onClick={onClose}
-            sx={{
-              borderRadius: 1,
-              mx: 1,
-              "&:hover": {
-                bgcolor: "rgba(0, 0, 0, 0.04)",
-              },
-            }}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItemButton>
-        </ListItem>
-      ))}
+    <List sx={{ py: 0 }}>
+      {items.map((item) => {
+        const active = pathname === item.path;
+
+        return (
+          <ListItem key={item.text} disablePadding>
+            <ListItemButton
+              component={Link}
+              href={item.path}
+              onClick={onClose}
+              sx={{
+                px: 2,
+                py: 1,
+                bgcolor: active ? "#f0f0f0" : "transparent",
+                "&:hover": { bgcolor: "#f5f5f5" },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 34, color: "#333" }}>
+                {item.icon}
+              </ListItemIcon>
+
+              <ListItemText
+                primary={item.text}
+                primaryTypographyProps={{
+                  fontSize: 14,
+                  fontWeight: active ? 600 : 400,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        );
+      })}
     </List>
   );
 
@@ -103,135 +136,79 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     router.push("/");
   };
 
-  /* ---------------- UI ---------------- */
-
   return (
-    <Drawer anchor="left" open={open} onClose={onClose}>
-      <Box
-        sx={{
-          width: 280,
-          height: "100%",
-          bgcolor: "#f8f9fa",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        {/* ---------- Header ---------- */}
+    <Drawer
+      anchor="left"
+      open={open}
+      onClose={onClose} // click outside closes automatically
+      variant="temporary"
+      ModalProps={{ keepMounted: true }}
+      PaperProps={{
+        sx: {
+          width: 260,
+          borderRight: "none",
+        },
+      }}
+    >
+      <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+        {/* Profile Area */}
         <Box
           sx={{
-            p: 3,
-            bgcolor: "primary.main",
-            color: "white",
-            textAlign: "center",
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            p: 2,
+            background: "linear-gradient(180deg,#f5f1e8 0%, #f0ede5 100%)",
           }}
         >
-          {!hydrated || loading ? (
-            <Box>
-              <Skeleton
-                variant="circular"
-                width={64}
-                height={64}
-                sx={{ mx: "auto", bgcolor: "rgba(255,255,255,0.2)" }}
-              />
-              <Skeleton
-                variant="text"
-                width="60%"
-                sx={{ mx: "auto", mt: 1, bgcolor: "rgba(255,255,255,0.2)" }}
-              />
-            </Box>
-          ) : isAuthenticated && user ? (
-            <>
-              <Avatar
-                sx={{
-                  width: 64,
-                  height: 64,
-                  mx: "auto",
-                  bgcolor: "white",
-                  color: "primary.main",
-                  fontWeight: "bold",
-                  fontSize: "1.5rem",
-                }}
-              >
-                {user.name?.[0]?.toUpperCase() || "U"}
-              </Avatar>
+          <Avatar sx={{ bgcolor: "#6c7ae0" }}>{user?.name?.[0] || "D"}</Avatar>
 
-              <Typography variant="h6" sx={{ mt: 1, fontWeight: 600 }}>
-                {user.name}
-              </Typography>
+          <Box>
+            <Typography fontSize={13} color="text.secondary">
+              আপনার আইডি:
+            </Typography>
 
-              <Chip
-                size="small"
-                label={user.userType}
-                sx={{
-                  mt: 1,
-                  bgcolor: "rgba(255,255,255,0.2)",
-                  color: "white",
-                  fontWeight: 600,
-                }}
-              />
-            </>
-          ) : (
-            <Button
-              component={Link}
-              href="/login"
-              variant="contained"
-              startIcon={<LoginIcon />}
-              onClick={onClose}
-              sx={{
-                bgcolor: "white",
-                color: "primary.main",
-                fontWeight: "bold",
-                "&:hover": { bgcolor: "#f0f0f0" },
-              }}
-            >
-              Login / Register
-            </Button>
-          )}
+            <Typography fontWeight={600} fontSize={14}>
+              {user?.name || "Wym1"}
+            </Typography>
+
+            <Typography fontSize={12} color="text.secondary">
+              Deshi AI
+            </Typography>
+          </Box>
         </Box>
 
-        {/* ---------- Menu ---------- */}
-        <Box
-          sx={{ flexGrow: 1, overflowY: "auto", pb: isAuthenticated ? 10 : 2 }}
-        >
+        <Divider />
+
+        {/* Menus */}
+        <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
           {renderList(primaryMenu)}
+
           <Divider sx={{ my: 1 }} />
+
           {renderList(secondaryMenu)}
+
           <Divider sx={{ my: 1 }} />
+
           {renderList(tertiaryMenu)}
 
-          {/* ---------- Admin Section ---------- */}
+          {/* Admin */}
           {isAdmin && (
             <>
               <Divider sx={{ my: 1 }} />
+
               <List>
                 <ListItem disablePadding>
                   <ListItemButton
                     component={Link}
                     href="/admin"
                     onClick={onClose}
-                    sx={{
-                      mx: 1,
-                      borderRadius: 1,
-                      bgcolor: "primary.light",
-                      "&:hover": {
-                        bgcolor: "primary.main",
-                        color: "white",
-                        "& .MuiListItemIcon-root": {
-                          color: "white",
-                        },
-                      },
-                    }}
                   >
-                    <ListItemIcon>
-                      <Dashboard color="primary" />
+                    <ListItemIcon sx={{ minWidth: 34 }}>
+                      <Dashboard fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText
-                      primary="Admin Dashboard"
-                      primaryTypographyProps={{
-                        fontWeight: "bold",
-                        color: "primary",
-                      }}
-                    />
+
+                    <ListItemText primary="Admin Dashboard" />
                   </ListItemButton>
                 </ListItem>
               </List>
@@ -239,22 +216,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
           )}
         </Box>
 
-        {/* ---------- Footer ---------- */}
+        {/* Footer */}
         {isAuthenticated && (
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: 0,
-              width: "100%",
-              p: 2,
-              borderTop: "1px solid #ddd",
-              bgcolor: "white",
-            }}
-          >
+          <Box sx={{ p: 2, borderTop: "1px solid #eee" }}>
             <Button
+              fullWidth
               variant="outlined"
               color="error"
-              fullWidth
               startIcon={<Logout />}
               onClick={handleLogout}
             >
@@ -266,214 +234,3 @@ export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     </Drawer>
   );
 };
-
-// // apps/web/src/components/layout/Sidebar.tsx
-// "use client";
-
-// import React from "react";
-// import {
-//   Drawer,
-//   Box,
-//   Avatar,
-//   Typography,
-//   List,
-//   ListItem,
-//   ListItemButton,
-//   ListItemIcon,
-//   ListItemText,
-//   Divider,
-//   Button,
-//   Chip,
-// } from "@mui/material";
-// import {
-//   Home,
-//   AccountCircle,
-//   ShoppingCart,
-//   EventNote,
-//   Gavel,
-//   ContactSupport,
-//   Info,
-//   People,
-//   Policy,
-//   Logout,
-//   Dashboard,
-// } from "@mui/icons-material";
-// import Link from "next/link";
-// import { useAuth } from "@/contexts/AuthContext";
-
-// interface SidebarProps {
-//   open: boolean;
-//   onClose: () => void;
-// }
-
-// export const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
-//   const { user, isAuthenticated, isAdmin, logout, hydrated, loading } =
-//     useAuth();
-
-//   // Prevent flicker / SSR mismatch
-//   if (!hydrated || loading) {
-//     return null;
-//   }
-
-//   /* ---------------- Navigation Groups ---------------- */
-
-//   const primaryMenu = [
-//     { text: "হোমপেজ", icon: <Home />, path: "/" },
-//     ...(isAuthenticated
-//       ? [{ text: "আপনার প্রোফাইল", icon: <AccountCircle />, path: "/profile" }]
-//       : []),
-//     { text: "প্যাকেজ কিনুন", icon: <ShoppingCart />, path: "/packages" },
-//   ];
-
-//   const secondaryMenu = [
-//     { text: "সেন্ট্রাল রুটিন", icon: <EventNote />, path: "/routine" },
-//     { text: "ব্যাবহারের নিয়ম", icon: <Gavel />, path: "/rules" },
-//     { text: "যোগাযোগ", icon: <ContactSupport />, path: "/contact" },
-//   ];
-
-//   const tertiaryMenu = [
-//     { text: "আমাদের সম্পর্কে", icon: <Info />, path: "/about" },
-//     { text: "পরামর্শকগণ", icon: <People />, path: "/consultants" },
-//     { text: "নীতিসমূহ", icon: <Policy />, path: "/privacy" },
-//   ];
-
-//   const renderList = (items: typeof primaryMenu) => (
-//     <List>
-//       {items.map((item) => (
-//         <ListItem key={item.text} disablePadding>
-//           <ListItemButton component={Link} href={item.path} onClick={onClose}>
-//             <ListItemIcon>{item.icon}</ListItemIcon>
-//             <ListItemText primary={item.text} />
-//           </ListItemButton>
-//         </ListItem>
-//       ))}
-//     </List>
-//   );
-
-//   /* ---------------- UI ---------------- */
-
-//   return (
-//     <Drawer anchor="left" open={open} onClose={onClose}>
-//       <Box sx={{ width: 280, height: "100%", bgcolor: "#f8f9fa" }}>
-//         {/* ---------- Header ---------- */}
-//         <Box
-//           sx={{
-//             p: 3,
-//             bgcolor: "primary.main",
-//             color: "white",
-//             textAlign: "center",
-//           }}
-//         >
-//           {isAuthenticated && user ? (
-//             <>
-//               <Avatar
-//                 sx={{
-//                   width: 64,
-//                   height: 64,
-//                   mx: "auto",
-//                   bgcolor: "white",
-//                   color: "primary.main",
-//                   fontWeight: "bold",
-//                 }}
-//               >
-//                 {user.name?.[0]?.toUpperCase()}
-//               </Avatar>
-
-//               <Typography variant="h6" sx={{ mt: 1, fontWeight: 600 }}>
-//                 {user.name}
-//               </Typography>
-
-//               <Chip
-//                 size="small"
-//                 label={user.userType}
-//                 sx={{
-//                   mt: 1,
-//                   bgcolor: "rgba(255,255,255,0.2)",
-//                   color: "white",
-//                   fontWeight: 600,
-//                 }}
-//               />
-//             </>
-//           ) : (
-//             <Button
-//               component={Link}
-//               href="/login"
-//               variant="contained"
-//               sx={{
-//                 bgcolor: "white",
-//                 color: "primary.main",
-//                 fontWeight: "bold",
-//                 "&:hover": { bgcolor: "#f0f0f0" },
-//               }}
-//             >
-//               Login / Register
-//             </Button>
-//           )}
-//         </Box>
-
-//         {/* ---------- Menu ---------- */}
-//         <Box sx={{ overflowY: "auto", pb: 10 }}>
-//           {renderList(primaryMenu)}
-//           <Divider />
-//           {renderList(secondaryMenu)}
-//           <Divider />
-//           {renderList(tertiaryMenu)}
-
-//           {/* ---------- Admin Section ---------- */}
-//           {isAdmin && (
-//             <>
-//               <Divider sx={{ my: 1 }} />
-//               <List>
-//                 <ListItem disablePadding>
-//                   <ListItemButton
-//                     component={Link}
-//                     href="/admin"
-//                     onClick={onClose}
-//                   >
-//                     <ListItemIcon>
-//                       <Dashboard color="primary" />
-//                     </ListItemIcon>
-//                     <ListItemText
-//                       primary="Admin Dashboard"
-//                       primaryTypographyProps={{
-//                         fontWeight: "bold",
-//                         color: "primary",
-//                       }}
-//                     />
-//                   </ListItemButton>
-//                 </ListItem>
-//               </List>
-//             </>
-//           )}
-//         </Box>
-
-//         {/* ---------- Footer ---------- */}
-//         {isAuthenticated && (
-//           <Box
-//             sx={{
-//               position: "absolute",
-//               bottom: 0,
-//               width: "100%",
-//               p: 2,
-//               borderTop: "1px solid #ddd",
-//               bgcolor: "white",
-//             }}
-//           >
-//             <Button
-//               variant="outlined"
-//               color="error"
-//               fullWidth
-//               startIcon={<Logout />}
-//               onClick={() => {
-//                 logout();
-//                 onClose();
-//               }}
-//             >
-//               Log Out
-//             </Button>
-//           </Box>
-//         )}
-//       </Box>
-//     </Drawer>
-//   );
-// };

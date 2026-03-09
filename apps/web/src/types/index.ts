@@ -49,32 +49,7 @@ export interface Exam {
   highestMark?: number;
 }
 
-// ==========================================
-// 2. Auth & User Interfaces (Preserved & Enhanced)
-// ==========================================
 
-// For the End-User (Mobile/Web App User)
-// export interface User {
-//   id: string;
-//   userId: string; 
-//   name: string;
-//   email: string;
-//   phone?: string;
-//   userType: 'FREE' | 'PAID' | 'PREMIUM';
-//   createdAt: string;
-// }
-
-// // For the Admin Panel User (Staff)
-// export interface Admin {
-//   id: string;
-//   name: string;
-//   email: string;
-//   // Expanded to support the new hierarchy features
-//   role: 'SUPER_ADMIN' | 'ADMIN' | 'MODERATOR' | 'EDITOR' | 'VIEWER';
-//   createdAt: string;
-// }
-
-// export type AuthUser = User | Admin;
 
 export type Role =
   | "SUPER_ADMIN"
@@ -94,6 +69,14 @@ export interface AuthUser {
   role: Role;
   userType: UserType;
 
+  createdAt: string;
+}
+
+export interface Admin {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
   createdAt: string;
 }
 

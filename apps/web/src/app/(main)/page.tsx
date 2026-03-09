@@ -18,7 +18,7 @@ import OndemandVideoIcon from "@mui/icons-material/OndemandVideo";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import GroupsIcon from "@mui/icons-material/Groups";
 import FacebookIcon from "@mui/icons-material/Facebook";
-import HomeCard from "../components/HomeCard";
+import HomeCard from "@/components/HomeCard";
 
 export default function Home() {
   const router = useRouter();

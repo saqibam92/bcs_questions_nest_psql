@@ -1,12 +1,10 @@
 // src/app/layout.tsx
-
 import type { Metadata } from "next";
 import "./globals.css";
 import ThemeRegistry from "../components/ThemeRegistry";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ResultProvider } from "@/contexts/ResultContext";
-import { AdminAuthProvider } from "@/contexts/AdminAuthContext";
-import { Toaster } from "react-hot-toast"; // Add Toaster for notifications
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "BCS Questions",
@@ -21,16 +19,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {/* Wrap all providers at the root */}
         <AuthProvider>
-          <AdminAuthProvider>
-            <ResultProvider>
-              <ThemeRegistry>
-                {children}
-                <Toaster position="bottom-center" />
-              </ThemeRegistry>
-            </ResultProvider>
-          </AdminAuthProvider>
+          <ResultProvider>
+            <ThemeRegistry>
+              {children}
+              <Toaster position="bottom-center" />
+            </ThemeRegistry>
+          </ResultProvider>
         </AuthProvider>
       </body>
     </html>
